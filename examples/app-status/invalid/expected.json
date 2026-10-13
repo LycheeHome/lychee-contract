@@ -1,7 +1,22 @@
 {
-    "unknown-result.json": "/result",
-    "string-failed-attempts.json": "/failed_attempts",
-    "missing-installed-commit.json": "",
-    "unknown-field.json": "",
-    "unknown-gate-code.json": "/gate_code"
+  "unknown-result.json": {
+    "pointer": "/result",
+    "keyword": "enum"
+  },
+  "string-failed-attempts.json": {
+    "pointer": "/failed_attempts",
+    "keyword": "type"
+  },
+  "missing-installed-commit.json": {
+    "pointer": "",
+    "keyword": "required"
+  },
+  "unknown-field.json": {
+    "pointer": "",
+    "keyword": "additionalProperties"
+  },
+  "unknown-gate-code.json": {
+    "pointer": "/gate_code",
+    "keyword": "enum"
+  }
 }

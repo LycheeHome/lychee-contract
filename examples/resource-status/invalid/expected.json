@@ -1,8 +1,26 @@
 {
-    "unknown-result.json": "/result",
-    "string-failed-attempts.json": "/failed_attempts",
-    "installed-commit-set.json": "/installed_commit",
-    "unknown-action.json": "/action",
-    "empty-installed-tag.json": "/installed_tag",
-    "status-missing-gate-code.json": ""
+  "unknown-result.json": {
+    "pointer": "/result",
+    "keyword": "enum"
+  },
+  "string-failed-attempts.json": {
+    "pointer": "/failed_attempts",
+    "keyword": "type"
+  },
+  "installed-commit-set.json": {
+    "pointer": "/installed_commit",
+    "keyword": "const"
+  },
+  "unknown-action.json": {
+    "pointer": "/action",
+    "keyword": "enum"
+  },
+  "empty-installed-tag.json": {
+    "pointer": "/installed_tag",
+    "keyword": "pattern"
+  },
+  "status-missing-gate-code.json": {
+    "pointer": "",
+    "keyword": "required"
+  }
 }

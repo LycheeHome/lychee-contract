@@ -6,14 +6,16 @@ Declarations (the validator, not a schema):
 - examples/declarations/valid/ is validated together and must yield no errors.
 - Each examples/declarations/invalid/<rule>.yml is validated ALONE in a temp
   dir (so a cross-file port clash cannot mask the rule under test) and must
-  yield errors on exactly the `field` named by expected.json[<file>], and must
+  yield errors on exactly the `field` named by expected.json[<file>]['field'], one of
+  which contains expected.json[<file>]['message'] (so the example names its rule), and must
   not be in `valid`.
 
 Schemas (JSON Schema 2020-12, schemas/*.schema.json):
 - every schema passes the 2020-12 meta-schema;
 - every examples/<shape>/valid/*.json validates against schemas/<shape>.schema.json;
 - every examples/<shape>/invalid/*.json fails, and every top-level error sits at
-  the JSON Pointer that invalid/expected.json names for it (an error inside
+  the JSON Pointer that invalid/expected.json names for it, and one of them
+  has the jsonschema `keyword` it names (an error inside
   oneOf is reported at the oneOf's own location, so that is the pointer).
 
 Data files:
@@ -138,11 +140,16 @@ def check_schemas(failures):
             if f.name not in expected:
                 failures.append(f"examples/{shape}/invalid/{f.name}: no entry in expected.json")
                 continue
-            got = sorted({pointer(e.absolute_path)
-                          for e in validator.iter_errors(json.loads(f.read_text()))})
-            if got != [expected[f.name]]:
+            want = expected[f.name]
+            errs = list(validator.iter_errors(json.loads(f.read_text())))
+            got = sorted({pointer(e.absolute_path) for e in errs})
+            if got != [want["pointer"]]:
                 failures.append(f"examples/{shape}/invalid/{f.name}: expected errors only "
-                                f"at {expected[f.name]!r}, got {got}")
+                                f"at {want['pointer']!r}, got {got}")
+            elif want["keyword"] not in {e.validator for e in errs}:
+                failures.append(f"examples/{shape}/invalid/{f.name}: expected a "
+                                f"{want['keyword']!r} error at {want['pointer']!r}, got "
+                                f"{sorted({e.validator for e in errs})}")
         checked += len(valid_files) + len(invalid_files)
     return checked
 
@@ -213,7 +220,7 @@ def main():
             # rule under test by validating the file under its declared name;
             # only the name rule's own example keeps its mismatching filename.
             declared = (yaml.safe_load(f.read_text()) or {}).get("name")
-            target = f.name if expected[f.name] == "name" else f"{declared}.yml"
+            target = f.name if expected[f.name]["field"] == "name" else f"{declared}.yml"
             shutil.copy(f, pathlib.Path(tmp) / target)
             try:
                 valid, errors = validate(tmp)
@@ -221,9 +228,14 @@ def main():
                 failures.append(f"invalid/{f.name}: {exc}")
                 continue
         fields = [e.get("field") for e in errors]
-        if set(fields) != {expected[f.name]}:
+        want = expected[f.name]
+        if set(fields) != {want["field"]}:
             failures.append(f"invalid/{f.name}: expected errors only on field "
-                            f"{expected[f.name]!r}, got {fields}")
+                            f"{want['field']!r}, got {fields}")
+        elif not any(want["message"] in (e.get("message") or "") for e in errors):
+            failures.append(f"invalid/{f.name}: no error on {want['field']!r} "
+                            f"contains {want['message']!r}; got "
+                            f"{[e.get('message') for e in errors]}")
         if valid:
             failures.append(f"invalid/{f.name}: was accepted into `valid`")
 
