@@ -1,0 +1,10 @@
+{
+  "latest-tag.yml": "image",
+  "wrong-registry.yml": "image",
+  "reserved-port.yml": "port",
+  "privileged-site-port.yml": "port",
+  "unknown-field.yml": "command",
+  "site-with-mounts.yml": "mounts",
+  "name-mismatch.yml": "name",
+  "bind-public.yml": "bind"
+}

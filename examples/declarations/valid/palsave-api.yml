@@ -1,0 +1,7 @@
+name:         palsave-api
+image:        ghcr.io/lycheehome/palsave-api:0.3.0
+state:        running
+port:         8788
+bind:         127.0.0.1
+mounts:       [palworld_saves]
+state_volume: true

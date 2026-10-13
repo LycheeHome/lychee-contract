@@ -1,0 +1,9 @@
+# Mirrors the entitlement entries of lychee-ops' mounts.yml, unrendered: the
+# double-brace values are literal text here, which the validator treats as
+# opaque strings. site_files is deliberately absent.
+palworld_saves:
+  source: "{{ palworld_backup_dir }}"
+  target: /saves
+  mode: ro
+  group: "{{ palworld_gid }}"
+  allowed_resources: [palsave-api]

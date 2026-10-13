@@ -1,0 +1,4 @@
+name:  blog-lychee-land
+image: ghcr.io/lycheehome/blog:latest
+state: running
+port:  3100

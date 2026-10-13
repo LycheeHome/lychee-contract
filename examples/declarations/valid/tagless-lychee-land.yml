@@ -1,0 +1,4 @@
+name:  tagless-lychee-land
+image: ghcr.io/lycheehome/tagless
+state: running
+port:  3200

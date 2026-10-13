@@ -1,0 +1,4 @@
+name:  blog-lychee-land
+image: docker.io/library/blog:1.0.0
+state: running
+port:  3100

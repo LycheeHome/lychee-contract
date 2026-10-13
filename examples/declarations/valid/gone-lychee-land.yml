@@ -1,0 +1,4 @@
+name:  gone-lychee-land
+image: ghcr.io/lycheehome/gone:0.1.0
+state: absent
+port:  3300
