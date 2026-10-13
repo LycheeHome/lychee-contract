@@ -21,7 +21,7 @@
   },
   "site-with-mounts.yml": {
     "field": "mounts",
-    "message": "allowed_resources"
+    "message": "is not in its allowed_resources"
   },
   "name-mismatch.yml": {
     "field": "name",
