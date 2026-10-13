@@ -172,7 +172,10 @@ sudoers; it never starts anything else on this path.
 - **Grants.** `clients_file` (`/etc/lychee-admin/clients.json`, `0640
   root:lychee-admin`, non-secret) has the shape of `schemas/clients.schema.json`:
   `{"clients": [{"name", "grants": {"<unit>": ["<action>", ...]}}]}`, `name`
-  matching `^[a-z][a-z0-9-]{0,30}$`.
+  matching `^[a-z][a-z0-9-]{0,30}$`. Each `<unit>` grant key is the inventory
+  entry's `name` (e.g. `palworld-palchuds`), never its `unit` value
+  (`palworld-palchuds.service`); the same bare name is the `<unit>` in
+  `lychee-op-<unit>-<action>.service`.
 - **A request's socket is its caller.** There are no tokens. The socket a
   request arrived on identifies the client; a request from the network app is
   the operator.
