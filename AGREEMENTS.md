@@ -113,4 +113,35 @@ writer, then reader. Removing one goes reader first (stop using it), then
 writer (stop producing it), then the contract. Every change is a tag: minor for
 an addition, major for a removal or a tightening a reader would notice. Both
 consuming repos deploy from `main`, so this order, not the pinned tag, is what
-keeps the host consistent between merges.
+keeps the host consistent between merges. The status schemas describe producer
+output, so requiring a new producer field is minor: its only reader (lychee-ops'
+watcher) tolerates the field's absence until the producers carry it.
+
+## A-GATE-1 `gate_code` is the machine-readable form of `gate`
+
+Every status file carries `gate_code`, one of `constants.json`'s `gate_codes`;
+`gate` stays the human sentence. Readers branch on the code, never on the text.
+The inventory carries the code through when the entry has a status file.
+
+| Producer | Gate (result) | `gate_code` |
+|---|---|---|
+| lychee_admin_app | `could not read …/.env`, `DOMAIN missing …`, `DOMAIN in .env is …`, `RESERVED_HOSTNAMES … does not include …` (blocked) | `env-mismatch` |
+| lychee_admin_app | `up to date` (skipped) | `up-to-date` |
+| lychee_admin_app, swee_app | `ok` (deployed or failed) | `ok` |
+| lychee_admin_app, swee_app | `job test concluded: <list>` where every item is `in_progress` or `missing` (blocked) | `ci-pending` |
+| lychee_admin_app, swee_app | `job test concluded: <list>` with any other item (blocked) | `ci-failed` |
+| lychee_admin_app | `commit … exceeded the retry cap (…)` (blocked) | `retry-capped` |
+| swee_app | `no completed CI runs for <tag>` (blocked) | `ci-pending` |
+| swee_app | `no job named test in N completed run(s) for <tag>` (blocked) | `ci-unknown` |
+| swee_app | `pin unchanged (…)` (skipped) | `up-to-date` |
+| swee_app | `<tag> failed N times; not retrying (…)` (blocked) | `retry-capped` |
+| swee_app | `pinned tag … did not resolve at …` (blocked) | `pin-unresolved` |
+| resources_reconcile | `declaration rejected, nothing applied this tick: …` (blocked) | `declaration-rejected` |
+| resources_reconcile | `not applied: …` (blocked) | `not-applied` |
+| resources_reconcile | `no image tag declared yet; …` (awaiting-image) | `awaiting-image` |
+| resources_reconcile | `""` (deployed, or failed with `failed_step`) | `ok` |
+| any | the template default `unknown` | `unknown` |
+
+`ci-pending` means exactly what a watcher polling for CI means: `blocked` with
+either swee's "no completed CI runs" or a conclusion list whose every item is
+`in_progress` or `missing`. Any other conclusion in the list is `ci-failed`.

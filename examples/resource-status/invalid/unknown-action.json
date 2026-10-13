@@ -10,6 +10,7 @@
     "installed_commit": "none",
     "result": "deployed",
     "gate": "",
+    "gate_code": "ok",
     "failed_step": "",
     "failed_attempts": 0
 }

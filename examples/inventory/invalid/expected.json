@@ -1,7 +1,22 @@
 {
-  "unknown-group.json": "/services/0/group",
-  "container-with-unit.json": "/services/0",
-  "container-with-dot.json": "/services/0/container",
-  "unknown-field.json": "/services/0",
-  "string-failed-attempts.json": "/services/0/failed_attempts"
+  "unknown-group.json": {
+    "pointer": "/services/0/group",
+    "keyword": "enum"
+  },
+  "container-with-unit.json": {
+    "pointer": "/services/0",
+    "keyword": "oneOf"
+  },
+  "container-with-dot.json": {
+    "pointer": "/services/0/container",
+    "keyword": "pattern"
+  },
+  "unknown-field.json": {
+    "pointer": "/services/0",
+    "keyword": "additionalProperties"
+  },
+  "string-failed-attempts.json": {
+    "pointer": "/services/0/failed_attempts",
+    "keyword": "type"
+  }
 }

@@ -14,6 +14,7 @@ a declaration that is applied anyway would be decoration.
 import importlib.util
 import json
 import pathlib
+import re
 import subprocess
 import sys
 import tempfile
@@ -632,6 +633,20 @@ class StateTableTests(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertEqual(valid[0]["state"], "running")
         self.assertEqual(valid[0]["action"], "up")
+
+
+class ConstantsTests(unittest.TestCase):
+    def test_constants_tag_pattern_matches_the_validator(self):
+        constants = json.loads(
+            (MODULE_PATH.parent.parent / "constants.json").read_text())
+        pattern = constants["tag_pattern"]
+        floating = set(constants["floating_tags"])
+        for tag in ("1.2.3", "v1.2.3", "latest", "a", "-x", "a" * 128, "a" * 129):
+            with self.subTest(tag=tag):
+                from_constants = bool(re.fullmatch(pattern, tag)) and tag not in floating
+                m = vd.IMAGE_RE.fullmatch(f"ghcr.io/lycheehome/x:{tag}")
+                from_validator = bool(m) and m.group("tag") not in vd.FLOATING_TAGS
+                self.assertEqual(from_constants, from_validator)
 
 
 if __name__ == "__main__":

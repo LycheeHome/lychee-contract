@@ -12,7 +12,7 @@
   "additionalProperties": false,
   "$defs": {
     "entry": {
-      "description": "One service. Either a systemd unit or a compose project, never both on the wire. A reconciled entry (a status file was read) always carries result, last_run and failed_attempts; its other status fields may be omitted when empty (v1.0 producers write them as ''). An unreconciled entry carries no status fields.",
+      "description": "One service. Either a systemd unit or a compose project, never both on the wire. A reconciled entry (a status file was read) always carries result and failed_attempts; its other status fields (version, target, commit, gate, last_run) may be omitted when empty (v1.0 producers write them as '', which still validates). An unreconciled entry carries no status fields.",
       "type": "object",
       "required": ["name", "kind", "group", "reconciled"],
       "properties": {
@@ -30,6 +30,10 @@
         "commit": { "description": "The installed commit, or ''.", "type": "string" },
         "result": { "enum": ["deployed", "skipped", "blocked", "failed", "awaiting-image", "unknown"] },
         "gate": { "type": "string" },
+        "gate_code": {
+          "description": "From the status file's gate_code; absent when the status file has none or the entry is unreconciled. See A-GATE-1.",
+          "enum": ["ok", "up-to-date", "ci-pending", "ci-failed", "ci-unknown", "env-mismatch", "retry-capped", "pin-unresolved", "declaration-rejected", "not-applied", "awaiting-image", "unknown"]
+        },
         "last_run": {
           "description": "The status file's last_run, or '' when the status file has none (the template's fallback).",
           "anyOf": [{ "$ref": "common.schema.json#/$defs/timestamp" }, { "const": "" }]
@@ -53,14 +57,15 @@
       ],
       "if": { "properties": { "reconciled": { "const": true } } },
       "then": {
-        "required": ["result", "last_run", "failed_attempts"]
+        "required": ["result", "failed_attempts"]
       },
       "else": {
         "not": {
           "anyOf": [
             { "required": ["version"] }, { "required": ["target"] }, { "required": ["commit"] },
             { "required": ["result"] }, { "required": ["gate"] }, { "required": ["last_run"] },
-            { "required": ["failed_attempts"] }, { "required": ["available"] },
+            { "required": ["failed_attempts"] }, { "required": ["gate_code"] },
+            { "required": ["available"] },
             { "required": ["failed_step"] }
           ]
         }

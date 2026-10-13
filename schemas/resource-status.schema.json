@@ -10,6 +10,7 @@
   "properties": {
     "last_run": true,
     "gate": true,
+    "gate_code": true,
     "failed_step": true,
     "failed_attempts": true,
     "result": { "enum": ["deployed", "blocked", "failed", "awaiting-image"] },

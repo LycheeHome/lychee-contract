@@ -5,6 +5,7 @@
     "result": "skipped",
     "_result_values": "deployed | skipped | blocked | failed",
     "gate": "up to date",
+    "gate_code": "up-to-date",
     "failed_step": "",
     "failed_attempts": 0
 }

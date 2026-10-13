@@ -5,6 +5,7 @@
     "result": "blocked",
     "_result_values": "deployed | skipped | blocked | failed",
     "gate": "job test concluded: in_progress",
+    "gate_code": "ci-pending",
     "failed_step": "",
     "failed_attempts": 0
 }

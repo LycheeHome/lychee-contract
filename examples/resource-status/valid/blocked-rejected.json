@@ -10,6 +10,7 @@
     "installed_commit": "none",
     "result": "blocked",
     "gate": "declaration rejected, nothing applied this tick: tag 'latest' is floating; a declaration must pin a version",
+    "gate_code": "declaration-rejected",
     "failed_step": "",
     "failed_attempts": 3
 }

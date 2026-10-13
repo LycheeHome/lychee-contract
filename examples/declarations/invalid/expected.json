@@ -1,10 +1,34 @@
 {
-  "latest-tag.yml": "image",
-  "wrong-registry.yml": "image",
-  "reserved-port.yml": "port",
-  "privileged-site-port.yml": "port",
-  "unknown-field.yml": "command",
-  "site-with-mounts.yml": "mounts",
-  "name-mismatch.yml": "name",
-  "bind-public.yml": "bind"
+  "latest-tag.yml": {
+    "field": "image",
+    "message": "floating"
+  },
+  "wrong-registry.yml": {
+    "field": "image",
+    "message": "explicit tag"
+  },
+  "reserved-port.yml": {
+    "field": "port",
+    "message": "is reserved"
+  },
+  "privileged-site-port.yml": {
+    "field": "port",
+    "message": "privileged"
+  },
+  "unknown-field.yml": {
+    "field": "command",
+    "message": "unknown fields are rejected"
+  },
+  "site-with-mounts.yml": {
+    "field": "mounts",
+    "message": "is not in its allowed_resources"
+  },
+  "name-mismatch.yml": {
+    "field": "name",
+    "message": "must equal the filename stem"
+  },
+  "bind-public.yml": {
+    "field": "bind",
+    "message": "must be one of"
+  }
 }

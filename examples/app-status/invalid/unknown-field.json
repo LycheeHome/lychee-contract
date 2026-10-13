@@ -5,7 +5,8 @@
     "result": "deployed",
     "_result_values": "deployed | skipped | blocked | failed",
     "gate": "ok",
+    "gate_code": "ok",
     "failed_step": "",
     "failed_attempts": 0,
-    "gate_code": "deployed"
+    "extra_field": "x"
 }

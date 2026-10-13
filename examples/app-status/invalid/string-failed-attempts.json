@@ -5,6 +5,7 @@
     "result": "failed",
     "_result_values": "deployed | skipped | blocked | failed",
     "gate": "ok",
+    "gate_code": "ok",
     "failed_step": "Health check (health check returned: Status code was -1 and not [401]: Request failed: <urlopen error [Errno 111] Connection refused>)",
     "failed_attempts": "1"
 }
