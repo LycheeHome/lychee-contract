@@ -5,6 +5,7 @@
     "result": "unknown",
     "_result_values": "deployed | skipped | blocked | failed",
     "gate": "unknown",
+    "gate_code": "unknown",
     "failed_step": "",
     "failed_attempts": 0
 }

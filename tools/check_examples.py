@@ -47,7 +47,7 @@ SHAPES = ("inventory", "app-status", "resource-status")
 CONSTANT_KEYS = frozenset((
     "ci_job", "domain", "site_suffix", "site_name_pattern",
     "max_resource_name_length", "image_prefix", "tag_pattern", "floating_tags",
-    "release_tag_pattern", "reserved_ports", "site_min_port", "paths",
+    "release_tag_pattern", "reserved_ports", "site_min_port", "paths", "gate_codes",
 ))
 AGREEMENT_HEADING = re.compile(r"^## (A-[A-Z]+-[0-9]+)\b", re.MULTILINE)
 
@@ -68,6 +68,28 @@ def pointer(path):
     return "".join("/" + str(p).replace("~", "~0").replace("/", "~1") for p in path)
 
 
+def check_gate_codes(schemas, failures):
+    """constants.json's gate_codes equals the gate_code enum of every schema that has one."""
+    try:
+        codes = json.loads((ROOT / "constants.json").read_text())["gate_codes"]
+    except (OSError, ValueError, KeyError) as exc:
+        failures.append(f"constants.json: gate_codes: {exc!r}")
+        return
+    where = {
+        "common.schema.json": lambda s: s["$defs"]["common"]["properties"],
+        "inventory.schema.json": lambda s: s["$defs"]["entry"]["properties"],
+    }
+    for name, props in where.items():
+        try:
+            enum = props(schemas[name])["gate_code"]["enum"]
+        except (KeyError, TypeError):
+            failures.append(f"schemas/{name}: no gate_code enum")
+            continue
+        if enum != codes:
+            failures.append(f"schemas/{name}: gate_code enum {enum} != "
+                            f"constants.json gate_codes {codes}")
+
+
 def check_schemas(failures):
     schema_files = sorted(SCHEMAS.glob("*.schema.json")) if SCHEMAS.is_dir() else []
     if not schema_files:
@@ -83,6 +105,7 @@ def check_schemas(failures):
             failures.append(f"schemas/{f.name}: {getattr(exc, 'message', exc)}")
             continue
         schemas[f.name] = schema
+    check_gate_codes(schemas, failures)
     registry = Registry().with_resources(
         (s["$id"], Resource.from_contents(s)) for s in schemas.values() if "$id" in s)
 

@@ -10,6 +10,7 @@
     "installed_commit": "none",
     "result": "failed",
     "gate": "",
+    "gate_code": "ok",
     "failed_step": "Apply the declared state: Error response from daemon: manifest unknown",
     "failed_attempts": 2
 }

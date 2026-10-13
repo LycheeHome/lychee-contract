@@ -10,6 +10,7 @@
     "installed_commit": "none",
     "result": "awaiting-image",
     "gate": "no image tag declared yet; nothing rendered or applied until one is",
+    "gate_code": "awaiting-image",
     "failed_step": "",
     "failed_attempts": 0
 }

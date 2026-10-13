@@ -3,5 +3,6 @@
     "string-failed-attempts.json": "/failed_attempts",
     "installed-commit-set.json": "/installed_commit",
     "unknown-action.json": "/action",
-    "empty-installed-tag.json": "/installed_tag"
+    "empty-installed-tag.json": "/installed_tag",
+    "status-missing-gate-code.json": ""
 }

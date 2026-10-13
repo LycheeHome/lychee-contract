@@ -2,5 +2,6 @@
     "unknown-result.json": "/result",
     "string-failed-attempts.json": "/failed_attempts",
     "missing-installed-commit.json": "",
-    "unknown-field.json": ""
+    "unknown-field.json": "",
+    "unknown-gate-code.json": "/gate_code"
 }

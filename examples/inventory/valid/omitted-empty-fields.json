@@ -8,9 +8,9 @@
             "group": "service",
             "reconciled": true,
             "result": "awaiting-image",
-            "last_run": "2026-10-12T09:29:52Z",
             "failed_attempts": 0,
-            "available": "0.1.0"
+            "available": "0.1.0",
+            "gate_code": "awaiting-image"
         }
     ]
 }

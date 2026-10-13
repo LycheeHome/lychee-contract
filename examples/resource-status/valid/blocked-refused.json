@@ -10,6 +10,7 @@
     "installed_commit": "none",
     "result": "blocked",
     "gate": "not applied: mount source does not exist",
+    "gate_code": "not-applied",
     "failed_step": "",
     "failed_attempts": 1
 }

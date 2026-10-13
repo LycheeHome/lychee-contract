@@ -11,13 +11,17 @@
     },
     "common": {
       "type": "object",
-      "required": ["last_run", "result", "gate", "failed_step", "failed_attempts"],
+      "required": ["last_run", "result", "gate", "gate_code", "failed_step", "failed_attempts"],
       "properties": {
         "last_run": { "$ref": "#/$defs/timestamp" },
         "result": { "type": "string" },
         "gate": {
           "description": "Human-readable reason nothing was installed, or a short status ('ok', 'up to date'). May be ''.",
           "type": "string"
+        },
+        "gate_code": {
+          "description": "Machine-readable form of `gate`, from a closed set. The mapping from gate text and result to code is A-GATE-1 in AGREEMENTS.md.",
+          "enum": ["ok", "up-to-date", "ci-pending", "ci-failed", "ci-unknown", "env-mismatch", "retry-capped", "pin-unresolved", "declaration-rejected", "not-applied", "awaiting-image", "unknown"]
         },
         "failed_step": {
           "description": "The task that failed and its error, or '' when nothing failed.",
