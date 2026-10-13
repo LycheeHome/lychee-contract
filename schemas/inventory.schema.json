@@ -30,7 +30,10 @@
         "commit": { "description": "The installed commit, or ''.", "type": "string" },
         "result": { "enum": ["deployed", "skipped", "blocked", "failed", "awaiting-image", "unknown"] },
         "gate": { "type": "string" },
-        "last_run": { "$ref": "common.schema.json#/$defs/timestamp" },
+        "last_run": {
+          "description": "The status file's last_run, or '' when the status file has none (the template's fallback).",
+          "anyOf": [{ "$ref": "common.schema.json#/$defs/timestamp" }, { "const": "" }]
+        },
         "failed_attempts": { "type": "integer", "minimum": 0 },
         "available": { "type": "string", "minLength": 1 },
         "failed_step": { "type": "string", "minLength": 1 }

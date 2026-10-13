@@ -1,0 +1,19 @@
+{
+    "generated": "2026-10-12T09:30:00Z",
+    "services": [
+        {
+            "name": "lychee-admin",
+            "kind": "unit",
+            "unit": "lychee-admin.service",
+            "group": "service",
+            "reconciled": true,
+            "version": "",
+            "target": "",
+            "commit": "",
+            "result": "unknown",
+            "gate": "",
+            "last_run": "",
+            "failed_attempts": 0
+        }
+    ]
+}
