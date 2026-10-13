@@ -1,0 +1,15 @@
+{
+    "last_run": "2026-10-12T09:29:48Z",
+    "name": "blog-lychee-land",
+    "image": "",
+    "state": "",
+    "action": "",
+    "target_tag": "none",
+    "installed_tag": "none",
+    "available_tag": "",
+    "installed_commit": "none",
+    "result": "blocked",
+    "gate": "declaration rejected, nothing applied this tick: tag 'latest' is floating; a declaration must pin a version",
+    "failed_step": "",
+    "failed_attempts": 3
+}

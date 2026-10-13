@@ -1,0 +1,20 @@
+{
+  "ci_job": "test",
+  "domain": "lychee.land",
+  "site_suffix": "-lychee-land",
+  "site_name_pattern": "[a-z0-9](?:[a-z0-9-]*[a-z0-9])?-lychee-land",
+  "max_resource_name_length": 63,
+  "image_prefix": "ghcr.io/lycheehome/",
+  "tag_pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]{0,127}$",
+  "floating_tags": ["latest"],
+  "release_tag_pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+  "reserved_ports": [8787, 2019],
+  "site_min_port": 1024,
+  "paths": {
+    "inventory": "/var/lib/lychee-inventory/services.json",
+    "resource_status_dir": "/var/lib/lychee-resources",
+    "caddyfile": "/etc/caddy/Caddyfile",
+    "tunnel_config": "/etc/cloudflared/sites-config.yml",
+    "sites_root": "/var/www"
+  }
+}

@@ -1,0 +1,10 @@
+{
+    "last_run": "2026-10-12T09:44:41Z",
+    "target_commit": "89abcde0123f456789abcde0123f456789abcde0",
+    "installed_commit": "89abcde0123f456789abcde0123f456789abcde0",
+    "result": "skipped",
+    "_result_values": "deployed | skipped | blocked | failed",
+    "gate": "up to date",
+    "failed_step": "",
+    "failed_attempts": 0
+}

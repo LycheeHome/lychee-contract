@@ -1,0 +1,15 @@
+{
+    "last_run": "2026-10-12T09:29:51Z",
+    "name": "old-lychee-land",
+    "image": "ghcr.io/lycheehome/old-site:0.4.2",
+    "state": "absent",
+    "action": "down",
+    "target_tag": "0.4.2",
+    "installed_tag": "",
+    "available_tag": "",
+    "installed_commit": "none",
+    "result": "deployed",
+    "gate": "",
+    "failed_step": "",
+    "failed_attempts": 0
+}

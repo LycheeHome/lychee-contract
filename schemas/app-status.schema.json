@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LycheeHome/lychee-contract/schemas/app-status.schema.json",
+  "title": "App deploy status (deploy-status.json)",
+  "description": "Written by lychee-ops' lychee_admin_app and swee_app roles. swee's file also carries target_tag and installed_tag.",
+  "type": "object",
+  "allOf": [{ "$ref": "common.schema.json#/$defs/common" }],
+  "required": ["target_commit", "installed_commit", "_result_values"],
+  "properties": {
+    "last_run": true,
+    "gate": true,
+    "failed_step": true,
+    "failed_attempts": true,
+    "result": { "enum": ["deployed", "skipped", "blocked", "failed", "unknown"] },
+    "target_commit": {
+      "description": "The commit the run aimed at, or 'unknown' when it could not be read.",
+      "type": "string",
+      "minLength": 1
+    },
+    "installed_commit": {
+      "description": "The last commit that passed a health check, or 'none' when nothing has.",
+      "type": "string",
+      "minLength": 1
+    },
+    "target_tag": {
+      "description": "swee only: the tag the run aimed at, or 'none'.",
+      "type": "string",
+      "minLength": 1
+    },
+    "installed_tag": {
+      "description": "swee only: the last tag that passed a health check, or 'none'.",
+      "type": "string",
+      "minLength": 1
+    },
+    "_result_values": {
+      "description": "A comment written into the file for a human reader. Not the full enum: 'unknown' is also written.",
+      "const": "deployed | skipped | blocked | failed"
+    }
+  },
+  "additionalProperties": false
+}

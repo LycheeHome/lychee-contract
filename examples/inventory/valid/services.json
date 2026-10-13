@@ -1,0 +1,85 @@
+{
+    "generated": "2026-10-12T09:30:00Z",
+    "services": [
+        {
+            "name": "lychee-reconcile-timer",
+            "kind": "unit",
+            "unit": "lychee-reconcile.timer",
+            "group": "reconciler",
+            "reconciled": false
+        },
+        {
+            "name": "lychee-watch-timer",
+            "kind": "unit",
+            "unit": "lychee-watch.timer",
+            "group": "reconciler",
+            "reconciled": false
+        },
+        {
+            "name": "lychee-admin",
+            "kind": "unit",
+            "unit": "lychee-admin.service",
+            "group": "service",
+            "reconciled": true,
+            "version": "0123abc",
+            "target": "",
+            "commit": "0123abc4567def890123abc4567def890123abc4",
+            "result": "skipped",
+            "gate": "up to date",
+            "last_run": "2026-10-12T09:29:41Z",
+            "failed_attempts": 0
+        },
+        {
+            "name": "caddy",
+            "kind": "unit",
+            "unit": "caddy.service",
+            "group": "infrastructure",
+            "reconciled": false
+        },
+        {
+            "name": "palsave-api",
+            "kind": "container",
+            "container": "palsave-api",
+            "group": "service",
+            "reconciled": true,
+            "version": "1.4.0",
+            "target": "1.4.0",
+            "commit": "",
+            "result": "deployed",
+            "gate": "",
+            "last_run": "2026-10-12T09:29:50Z",
+            "failed_attempts": 0,
+            "available": "1.5.0"
+        },
+        {
+            "name": "blog-lychee-land",
+            "kind": "container",
+            "container": "blog-lychee-land",
+            "group": "service",
+            "reconciled": true,
+            "version": "",
+            "target": "",
+            "commit": "",
+            "result": "awaiting-image",
+            "gate": "no image tag declared yet; nothing rendered or applied until one is",
+            "last_run": "2026-10-12T09:29:52Z",
+            "failed_attempts": 0,
+            "available": "0.1.0"
+        },
+        {
+            "name": "shop-lychee-land",
+            "kind": "container",
+            "container": "shop-lychee-land",
+            "group": "service",
+            "reconciled": true,
+            "version": "0.2.0",
+            "target": "0.3.0",
+            "commit": "",
+            "result": "failed",
+            "gate": "",
+            "last_run": "2026-10-12T09:29:55Z",
+            "failed_attempts": 2,
+            "failed_step": "Apply the declared state: Error response from daemon: manifest unknown"
+        }
+    ]
+}

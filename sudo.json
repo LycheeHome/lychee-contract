@@ -1,0 +1,12 @@
+{
+  "user": "lychee-admin",
+  "commands": [
+    {"id": "caddy-validate", "argv": ["/usr/bin/caddy", "validate", "--config", "/etc/caddy/Caddyfile"]},
+    {"id": "caddy-reload", "argv": ["/usr/bin/systemctl", "reload", "caddy"]},
+    {"id": "tunnel-restart", "argv": ["/usr/bin/systemctl", "restart", "cloudflared-sites"]},
+    {"id": "create-site-dir", "argv": ["/usr/local/sbin/lychee-admin-create-site-dir", "<hostname>"]},
+    {"id": "write-caddyfile", "argv": ["/usr/local/sbin/lychee-admin-write-config", "/etc/caddy/Caddyfile"], "stdin": "file content"},
+    {"id": "write-tunnel-config", "argv": ["/usr/local/sbin/lychee-admin-write-config", "/etc/cloudflared/sites-config.yml"], "stdin": "file content"},
+    {"id": "resource-status", "argv": ["/usr/local/sbin/lychee-admin-resource-status", "<project>"]}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+    "last_run": "2026-10-12T09:29:55Z",
+    "name": "shop-lychee-land",
+    "image": "ghcr.io/lycheehome/shop:0.3.0",
+    "state": "running",
+    "action": "up",
+    "target_tag": "0.3.0",
+    "installed_tag": "0.2.0",
+    "available_tag": "0.3.0",
+    "installed_commit": "none",
+    "result": "failed",
+    "gate": "",
+    "failed_step": "Apply the declared state: Error response from daemon: manifest unknown",
+    "failed_attempts": "2"
+}

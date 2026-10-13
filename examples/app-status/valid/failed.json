@@ -1,0 +1,10 @@
+{
+    "last_run": "2026-10-12T10:14:41Z",
+    "target_commit": "89abcde0123f456789abcde0123f456789abcde0",
+    "installed_commit": "0123abc4567def890123abc4567def890123abc4",
+    "result": "failed",
+    "_result_values": "deployed | skipped | blocked | failed",
+    "gate": "ok",
+    "failed_step": "Health check (health check returned: Status code was -1 and not [401]: Request failed: <urlopen error [Errno 111] Connection refused>)",
+    "failed_attempts": 1
+}

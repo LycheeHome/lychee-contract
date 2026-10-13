@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LycheeHome/lychee-contract/schemas/resource-status.schema.json",
+  "title": "Resource status (<resource_status_dir>/<name>/status.json)",
+  "description": "Written by lychee-ops' resources_reconcile role (tasks/write_status.yml). A declaration the validator rejects is written with image, state and action all ''.",
+  "type": "object",
+  "allOf": [{ "$ref": "common.schema.json#/$defs/common" }],
+  "required": ["name", "image", "state", "action", "target_tag", "installed_tag",
+               "available_tag", "installed_commit"],
+  "properties": {
+    "last_run": true,
+    "gate": true,
+    "failed_step": true,
+    "failed_attempts": true,
+    "result": { "enum": ["deployed", "blocked", "failed", "awaiting-image"] },
+    "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,62}$" },
+    "image": {
+      "description": "The declared image, tagless for a site awaiting its first image, or '' for a rejected declaration.",
+      "type": "string"
+    },
+    "state": { "enum": ["running", "stopped", "absent", ""] },
+    "action": { "enum": ["up", "stop", "down", ""] },
+    "target_tag": {
+      "description": "The tag the declaration pins, or the sentinel 'none' when its image has no tag.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]{0,127}$"
+    },
+    "installed_tag": {
+      "description": "The last tag successfully applied, or 'none' (never applied, or after a completed down).",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_][A-Za-z0-9._-]{0,127}$"
+    },
+    "available_tag": {
+      "description": "The newest tag the registry publishes, or '' when unknown. '' and not 'none', unlike the two tags above.",
+      "type": "string",
+      "pattern": "^([A-Za-z0-9_][A-Za-z0-9._-]{0,127})?$"
+    },
+    "installed_commit": {
+      "description": "Always the literal 'none' today: a resource is versioned by tag.",
+      "const": "none"
+    }
+  },
+  "additionalProperties": false
+}

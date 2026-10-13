@@ -1,0 +1,13 @@
+{
+    "generated": "2026-10-12T09:30:00Z",
+    "services": [
+        {
+            "name": "caddy",
+            "kind": "unit",
+            "unit": "caddy.service",
+            "group": "infrastructure",
+            "reconciled": false,
+            "state": "running"
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+{
+    "unknown-result.json": "/result",
+    "string-failed-attempts.json": "/failed_attempts",
+    "installed-commit-set.json": "/installed_commit",
+    "unknown-action.json": "/action",
+    "empty-installed-tag.json": "/installed_tag"
+}

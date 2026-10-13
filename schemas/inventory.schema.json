@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LycheeHome/lychee-contract/schemas/inventory.schema.json",
+  "title": "Service inventory (services.json)",
+  "description": "Published by lychee-ops' inventory role (templates/services.json.j2). Declared services plus discovered sites.",
+  "type": "object",
+  "required": ["generated", "services"],
+  "properties": {
+    "generated": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "services": { "type": "array", "items": { "$ref": "#/$defs/entry" } }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "entry": {
+      "description": "One service. Either a systemd unit or a compose project, never both on the wire. The status fields appear all together when a status file was read (reconciled: true) and not at all otherwise; available and failed_step only when non-empty.",
+      "type": "object",
+      "required": ["name", "kind", "group", "reconciled"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["unit", "container"] },
+        "unit": { "type": "string", "minLength": 1 },
+        "container": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,62}$" },
+        "group": { "enum": ["reconciler", "service", "infrastructure"] },
+        "reconciled": { "type": "boolean" },
+        "version": {
+          "description": "Installed tag, else the first 7 characters of the installed commit; '' when nothing is installed.",
+          "type": "string"
+        },
+        "target": { "description": "The pinned tag, or ''.", "type": "string" },
+        "commit": { "description": "The installed commit, or ''.", "type": "string" },
+        "result": { "enum": ["deployed", "skipped", "blocked", "failed", "awaiting-image", "unknown"] },
+        "gate": { "type": "string" },
+        "last_run": { "$ref": "common.schema.json#/$defs/timestamp" },
+        "failed_attempts": { "type": "integer", "minimum": 0 },
+        "available": { "type": "string", "minLength": 1 },
+        "failed_step": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": { "kind": { "const": "unit" } },
+          "required": ["unit"],
+          "not": { "required": ["container"] }
+        },
+        {
+          "properties": { "kind": { "const": "container" } },
+          "required": ["container"],
+          "not": { "required": ["unit"] }
+        }
+      ],
+      "if": { "properties": { "reconciled": { "const": true } } },
+      "then": {
+        "required": ["version", "target", "commit", "result", "gate", "last_run", "failed_attempts"]
+      },
+      "else": {
+        "not": {
+          "anyOf": [
+            { "required": ["version"] }, { "required": ["target"] }, { "required": ["commit"] },
+            { "required": ["result"] }, { "required": ["gate"] }, { "required": ["last_run"] },
+            { "required": ["failed_attempts"] }, { "required": ["available"] },
+            { "required": ["failed_step"] }
+          ]
+        }
+      }
+    }
+  }
+}
