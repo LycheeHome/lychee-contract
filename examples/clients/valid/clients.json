@@ -1,0 +1,19 @@
+{
+    "clients": [
+        {
+            "name": "palchuds-bot",
+            "grants": {
+                "palworld-palchuds": [
+                    "start",
+                    "stop",
+                    "restart",
+                    "update"
+                ]
+            }
+        },
+        {
+            "name": "status-page",
+            "grants": {}
+        }
+    ]
+}

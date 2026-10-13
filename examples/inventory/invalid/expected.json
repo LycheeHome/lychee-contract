@@ -18,5 +18,17 @@
   "string-failed-attempts.json": {
     "pointer": "/services/0/failed_attempts",
     "keyword": "type"
+  },
+  "unknown-action.json": {
+    "pointer": "/services/0/actions/0",
+    "keyword": "enum"
+  },
+  "duplicate-action.json": {
+    "pointer": "/services/0/actions",
+    "keyword": "uniqueItems"
+  },
+  "actions-on-container.json": {
+    "pointer": "/services/0",
+    "keyword": "oneOf"
   }
 }

@@ -145,3 +145,38 @@ The inventory carries the code through when the entry has a status file.
 `ci-pending` means exactly what a watcher polling for CI means: `blocked` with
 either swee's "no completed CI runs" or a conclusion list whose every item is
 `in_progress` or `missing`. Any other conclusion in the list is `ci-failed`.
+
+## A-OPS-1 Host operations: actions on units, and the clients that may ask
+
+A unit entry in the inventory may carry `actions`, a unique subset of
+`constants.json`'s `host_actions` (`start`, `stop`, `restart`, `update`); a
+container entry may not. An action is a oneshot systemd service that lychee-ops
+declares per unit and action, named by `op_unit_pattern`
+(`lychee-op-<unit>-<action>.service`, `<unit>` being the inventory entry's
+`name`). lychee-admin starts it with exactly `op_sudo_argv`
+(`/usr/bin/systemctl start --no-block <op_unit>`), pinned per unit and action in
+sudoers; it never starts anything else on this path.
+
+- **Lock.** Each action runs under `flock -n /run/lychee-op/<unit>.lock`, so a
+  unit has at most one action at a time; the lock is per unit, not global.
+- **Log.** Output goes to `/var/lib/lychee-op/<unit>-<action>.log`, in a
+  directory that is `0750 root:lychee-admin`.
+- **Timeouts.** `TimeoutStartSec` is 300 for `start`, `stop` and `restart`, and
+  1800 for `update`.
+- **Clients.** A local API client reaches lychee-admin only through a Unix
+  socket at `client_socket_path`, `/run/lychee-admin/clients/<client>/api.sock`.
+  lychee-admin creates the socket (mode `0666`); there are no `.socket` units.
+  Its directory is created by lychee-ops (`tmpfiles.d`) as `0750
+  lychee-admin:<client>-api`, and the group `<client>-api` holds exactly the
+  client's own user, which is what actually restricts who can connect.
+- **Grants.** `clients_file` (`/etc/lychee-admin/clients.json`, `0640
+  root:lychee-admin`, non-secret) has the shape of `schemas/clients.schema.json`:
+  `{"clients": [{"name", "grants": {"<unit>": ["<action>", ...]}}]}`, `name`
+  matching `^[a-z][a-z0-9-]{0,30}$`.
+- **A request's socket is its caller.** There are no tokens. The socket a
+  request arrived on identifies the client; a request from the network app is
+  the operator.
+- **Errors.** An unknown unit or action, or a grant for an action the inventory
+  does not list, is `404`; a caller not granted the action is `403`; a unit with
+  an action already running is `409`; a failure starting the action service is
+  `502` with its error text.

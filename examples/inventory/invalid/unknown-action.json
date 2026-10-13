@@ -1,0 +1,15 @@
+{
+    "generated": "2026-10-12T09:30:00Z",
+    "services": [
+        {
+            "name": "palworld-palchuds",
+            "kind": "unit",
+            "unit": "palworld-palchuds.service",
+            "group": "service",
+            "reconciled": false,
+            "actions": [
+                "reboot"
+            ]
+        }
+    ]
+}

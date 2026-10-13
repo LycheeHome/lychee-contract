@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LycheeHome/lychee-contract/schemas/clients.schema.json",
+  "title": "Local API clients (clients.json)",
+  "description": "Written by lychee-ops at /etc/lychee-admin/clients.json (A-OPS-1). Which client may run which host action on which unit. Non-secret: a client is identified by its socket, never by a token.",
+  "type": "object",
+  "required": ["clients"],
+  "properties": {
+    "clients": { "type": "array", "items": { "$ref": "#/$defs/client" } }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "client": {
+      "type": "object",
+      "required": ["name", "grants"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,30}$" },
+        "grants": {
+          "description": "Keys are inventory unit-entry names; values are the actions granted on that unit.",
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z0-9][a-z0-9-]{0,62}$" },
+          "additionalProperties": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "enum": ["start", "stop", "restart", "update"] }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

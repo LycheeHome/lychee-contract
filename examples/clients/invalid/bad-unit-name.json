@@ -1,0 +1,12 @@
+{
+    "clients": [
+        {
+            "name": "bot",
+            "grants": {
+                "Palworld Palchuds": [
+                    "start"
+                ]
+            }
+        }
+    ]
+}
