@@ -12,7 +12,7 @@
   "additionalProperties": false,
   "$defs": {
     "entry": {
-      "description": "One service. Either a systemd unit or a compose project, never both on the wire. The status fields appear all together when a status file was read (reconciled: true) and not at all otherwise; available and failed_step only when non-empty.",
+      "description": "One service. Either a systemd unit or a compose project, never both on the wire. A reconciled entry (a status file was read) always carries result, last_run and failed_attempts; its other status fields may be omitted when empty (v1.0 producers write them as ''). An unreconciled entry carries no status fields.",
       "type": "object",
       "required": ["name", "kind", "group", "reconciled"],
       "properties": {
@@ -50,7 +50,7 @@
       ],
       "if": { "properties": { "reconciled": { "const": true } } },
       "then": {
-        "required": ["version", "target", "commit", "result", "gate", "last_run", "failed_attempts"]
+        "required": ["result", "last_run", "failed_attempts"]
       },
       "else": {
         "not": {
