@@ -164,6 +164,27 @@ sudoers; it never starts anything else on this path.
   whole: emptied once before the run, then appended to (never systemd's
   `truncate:`, which re-empties the file for every command line, `ExecStopPost`
   included).
+
+  The `update` action's log ends with exactly one outcome line, written by the
+  update script itself, in one of three formats, where `N` and `M` are decimal
+  integers:
+
+  - `lychee-op-update: stop failed (exit N)`: the stop failed with status `N`.
+    Nothing was updated and the unit was not started again.
+  - `lychee-op-update: update failed (exit N); start exit M`: the stop worked,
+    and the update, the start that follows it, or both returned non-zero. `N`
+    is the update's status and `M` the start's; `N` is `0` when only the start
+    failed.
+  - `lychee-op-update: done`: the update and the start both returned 0.
+
+  The line is absent whenever the script did not run to completion: the run was
+  killed (its timeout, or the service being stopped), the action's `flock -n`
+  refused because another action holds the unit's lock, or the script failed
+  before reaching the line (the marker write, for example). In each case the
+  update service's result still records the failure. The line is printed after
+  a newline of its own, so it always begins a line. Readers take the last line
+  starting with `lychee-op-update: `, because other output (the recorder's or
+  the restart guard's) can follow it in the log.
 - **Timeouts.** `TimeoutStartSec` is 300 for `start`, `stop` and `restart`, and
   1800 for `update`.
 - **Result.** As the action service exits, it writes
