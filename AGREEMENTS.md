@@ -160,10 +160,13 @@ sudoers; it never starts anything else on this path.
 - **Lock.** Each action runs under `flock -n /run/lychee-op/<unit>.lock`, so a
   unit has at most one action at a time; the lock is per unit, not global.
 - **Log.** Output goes to `/var/lib/lychee-op/<unit>-<action>.log`, in a
-  directory that is `0750 root:lychee-admin`.
+  directory that is `0750 root:lychee-admin`. It holds the latest run's output,
+  whole: emptied once before the run, then appended to (never systemd's
+  `truncate:`, which re-empties the file for every command line, `ExecStopPost`
+  included).
 - **Timeouts.** `TimeoutStartSec` is 300 for `start`, `stop` and `restart`, and
   1800 for `update`.
-- **Result.** On every exit the action service writes
+- **Result.** As the action service exits, it writes
   `/var/lib/lychee-op/<unit>-<action>.result.json` (`op_result_path`), `0640
   root:lychee-admin`, in the same directory as the log; it does so as the
   *first* `ExecStopPost`, so the record survives systemd unloading the unit.
@@ -173,8 +176,14 @@ sudoers; it never starts anything else on this path.
   a non-empty lowercase word; `exit_status` is an integer, or `null` when the
   process never exited normally; the times are ISO 8601 UTC, or `null` when
   systemd had none. A reader treats an unreadable or invalid file as absent,
-  never as an error. A running action is still read from systemd, not from the
-  file: a result left by an earlier run says nothing about one that is active.
+  never as an error. It is not written when `ExecStopPost` never runs
+  (`start-limit-hit`) or the recorder refuses its input, so a file can be older
+  than the latest attempt. A reader therefore takes state from systemd first: an
+  action that is active is running, and one systemd holds as `failed` is failed
+  with systemd's times, whatever the file says; only otherwise does the file
+  decide. Just after a `--no-block` start, systemd may not yet show the new job,
+  so a client that started an action compares `started_at` with when it asked
+  before taking a result as this run's.
 - **Clients.** A local API client reaches lychee-admin only through a Unix
   socket at `client_socket_path`, `/run/lychee-admin/clients/<client>/api.sock`.
   lychee-admin creates the socket (mode `0666`); there are no `.socket` units.
