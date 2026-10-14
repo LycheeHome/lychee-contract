@@ -163,6 +163,18 @@ sudoers; it never starts anything else on this path.
   directory that is `0750 root:lychee-admin`.
 - **Timeouts.** `TimeoutStartSec` is 300 for `start`, `stop` and `restart`, and
   1800 for `update`.
+- **Result.** On every exit the action service writes
+  `/var/lib/lychee-op/<unit>-<action>.result.json` (`op_result_path`), `0640
+  root:lychee-admin`, in the same directory as the log; it does so as the
+  *first* `ExecStopPost`, so the record survives systemd unloading the unit.
+  Its shape is `schemas/op-result.schema.json`: `{"unit", "action", "result",
+  "exit_status", "started_at", "finished_at"}`. `result` is systemd's
+  `$SERVICE_RESULT` verbatim (`success`, `exit-code`, `timeout`, `signal`, ...),
+  a non-empty lowercase word; `exit_status` is an integer, or `null` when the
+  process never exited normally; the times are ISO 8601 UTC, or `null` when
+  systemd had none. A reader treats an unreadable or invalid file as absent,
+  never as an error. A running action is still read from systemd, not from the
+  file: a result left by an earlier run says nothing about one that is active.
 - **Clients.** A local API client reaches lychee-admin only through a Unix
   socket at `client_socket_path`, `/run/lychee-admin/clients/<client>/api.sock`.
   lychee-admin creates the socket (mode `0666`); there are no `.socket` units.

@@ -1,0 +1,7 @@
+{
+  "unknown-field.json": { "pointer": "", "keyword": "additionalProperties" },
+  "empty-result.json": { "pointer": "/result", "keyword": "pattern" },
+  "uppercase-result.json": { "pointer": "/result", "keyword": "pattern" },
+  "string-exit-status.json": { "pointer": "/exit_status", "keyword": "type" },
+  "time-without-z.json": { "pointer": "/started_at", "keyword": "pattern" }
+}
