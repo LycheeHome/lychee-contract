@@ -1,0 +1,26 @@
+{
+  "bad-name.json": {
+    "pointer": "/clients/0/name",
+    "keyword": "pattern"
+  },
+  "unknown-action.json": {
+    "pointer": "/clients/0/grants/palworld-palchuds/0",
+    "keyword": "enum"
+  },
+  "duplicate-grant.json": {
+    "pointer": "/clients/0/grants/palworld-palchuds",
+    "keyword": "uniqueItems"
+  },
+  "unknown-field.json": {
+    "pointer": "/clients/0",
+    "keyword": "additionalProperties"
+  },
+  "missing-grants.json": {
+    "pointer": "/clients/0",
+    "keyword": "required"
+  },
+  "bad-unit-name.json": {
+    "pointer": "/clients/0/grants",
+    "keyword": "pattern"
+  }
+}

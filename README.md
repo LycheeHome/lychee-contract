@@ -11,7 +11,7 @@ what each side must agree on, in a form each side can check mechanically.
 
 ## Files
 
-- `schemas/` JSON Schemas for the inventory and the app and resource status files.
+- `schemas/` JSON Schemas for the inventory, the app and resource status files, and `schemas/clients.schema.json` (the shape of `/etc/lychee-admin/clients.json`).
 - `declarations/` the declaration validator (`validate_declarations.py`), its vocabulary and tests.
 - `examples/` known-good and known-bad documents, checked by `tools/check_examples.py`.
 - `constants.json` values every repo must share (domain, CI job name, ...).

@@ -45,11 +45,12 @@ EXAMPLES = ROOT / "examples" / "declarations"
 SITE_SUFFIX = "-lychee-land"
 SCHEMAS = ROOT / "schemas"
 # shape directory under examples/ -> its schema
-SHAPES = ("inventory", "app-status", "resource-status")
+SHAPES = ("inventory", "app-status", "resource-status", "clients")
 CONSTANT_KEYS = frozenset((
     "ci_job", "domain", "site_suffix", "site_name_pattern",
     "max_resource_name_length", "image_prefix", "tag_pattern", "floating_tags",
     "release_tag_pattern", "reserved_ports", "site_min_port", "paths", "gate_codes",
+    "host_actions", "op_unit_pattern", "op_sudo_argv", "client_socket_path", "clients_file",
 ))
 AGREEMENT_HEADING = re.compile(r"^## (A-[A-Z]+-[0-9]+)\b", re.MULTILINE)
 

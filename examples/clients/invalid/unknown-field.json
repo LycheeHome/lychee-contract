@@ -1,0 +1,9 @@
+{
+    "clients": [
+        {
+            "name": "bot",
+            "grants": {},
+            "token": "x"
+        }
+    ]
+}
