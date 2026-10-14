@@ -176,6 +176,10 @@ sudoers; it never starts anything else on this path.
   entry's `name` (e.g. `palworld-palchuds`), never its `unit` value
   (`palworld-palchuds.service`); the same bare name is the `<unit>` in
   `lychee-op-<unit>-<action>.service`.
+- **The app's group.** The log directory and `clients_file` are readable through
+  the group `lychee-admin`, so lychee-admin's process must hold that group. Its
+  unit runs with a different primary group (`webdeploy`), which drops
+  `lychee-admin` unless the unit names it in `SupplementaryGroups=`.
 - **A request's socket is its caller.** There are no tokens. The socket a
   request arrived on identifies the client; a request from the network app is
   the operator.
