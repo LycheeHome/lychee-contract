@@ -16,6 +16,7 @@
   "op_sudo_argv": ["/usr/bin/systemctl", "start", "--no-block", "{op_unit}"],
   "client_socket_path": "/run/lychee-admin/clients/{client}/api.sock",
   "clients_file": "/etc/lychee-admin/clients.json",
+  "op_result_path": "/var/lib/lychee-op/{unit}-{action}.result.json",
   "paths": {
     "inventory": "/var/lib/lychee-inventory/services.json",
     "resource_status_dir": "/var/lib/lychee-resources",
