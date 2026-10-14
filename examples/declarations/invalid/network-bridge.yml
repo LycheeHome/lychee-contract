@@ -1,0 +1,4 @@
+name:    swee
+image:   ghcr.io/lycheehome/swee:2.13.0
+port:    8790
+network: bridge

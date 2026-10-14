@@ -18,15 +18,27 @@ attacker reach it. So:
     for an unrelated reason. The check is a set difference against one
     exhaustive tuple, computed once -- not a per-field allowlist of "fields
     we know to be dangerous", which a new field would slip past without a
-    single line being wrong. `env_from` and `env_keys` are reserved for the
-    later secrets slice and are rejected as unknown today, so that adding them
-    is additive rather than a schema migration.
+    single line being wrong. `env_from` and `env_keys` are still rejected as
+    unknown: the secrets slice became `secrets_file` instead (below).
 
   * A DECLARATION CANNOT NAME A HOST PATH. `mounts` is a list of aliases into
     the root-owned vocabulary (mounts.yml); there is no path to parse and no
     mode to coerce. Prefix allowlists were considered and rejected: traversal,
     symlink escapes and realpath races are exactly where that class of check
-    fails, and it has to be right the first time.
+    fails, and it has to be right the first time. An alias's mode is the
+    vocabulary's too: `ro` unless the entry says exactly `rw`, and a
+    read-write entry entitles exactly one resource, by exact name, or nobody.
+
+  * THE v1.4 FIELDS CARRY NO PRIVILEGE OF THEIR OWN. `env` is a mapping of
+    UPPER_SNAKE_CASE names to strings, for non-secret settings. `secrets_file`
+    is only a boolean: the file's path is the reconciler's
+    (/etc/lychee-secrets/<name>.env, hand-placed, 0600 root:root), so a
+    declaration still cannot name a host path. `network` may only be "host",
+    and only for a resource the vocabulary's top-level network_host_allowed
+    names exactly; that list is root-owned like the aliases and fails closed
+    the same way. A host-networked container publishes no port mapping, so
+    `port` is optional exactly when `network: host` is set and required
+    otherwise.
 
 Two failure-scoping decisions are deliberate and tested:
 
@@ -75,9 +87,26 @@ import yaml
 
 # Exhaustive. The spec's list, not a denylist: see the module docstring.
 DECLARATION_FIELDS = frozenset(
-    ("name", "image", "state", "port", "bind", "mounts", "state_volume")
+    ("name", "image", "state", "port", "bind", "mounts", "state_volume",
+     "env", "secrets_file", "network")
 )
-REQUIRED_FIELDS = ("name", "image", "port")
+# `port` is required too, unless `network: host` is set; see _check_one.
+REQUIRED_FIELDS = ("name", "image")
+
+# An environment variable name, applied with fullmatch (no anchors, for the
+# reason NAME_RE gives below).
+ENV_KEY_RE = re.compile(r"[A-Z][A-Z0-9_]*")
+
+# The only `network` a declaration may give.
+NETWORK_HOST = "host"
+
+# Top-level vocabulary keys that are not mount aliases. A declaration naming
+# one in `mounts` is told it is not an alias, and the alias listing omits it.
+VOCABULARY_SETTINGS = frozenset(("network_host_allowed",))
+
+# An alias's mode. Absent means read-only; anything else entitles nobody.
+ALIAS_MODES = frozenset(("ro", "rw"))
+DEFAULT_ALIAS_MODE = "ro"
 
 # state -> the action Task 4's apply_state.yml dispatches on. `absent` is
 # `docker compose down` and never carries -v; see the module docstring.
@@ -182,6 +211,8 @@ def _entitlement_problem(alias, name, entry):
     draft was fail-open, justified by a rollout window that does not exist:
     mounts.yml and this file ship in one commit, installed in one tick.)
     """
+    if not isinstance(entry, dict):
+        return f"mount {alias!r} is not a mapping in the vocabulary, so it permits no resource"
     if "allowed_resources" not in entry:
         return (f"mount {alias!r} has no allowed_resources key, so it permits "
                 f"no resource; add allowed_resources to its mounts.yml entry")
@@ -192,6 +223,17 @@ def _entitlement_problem(alias, name, entry):
     if not patterns:
         return (f"mount {alias!r}: allowed_resources is an empty list, so no "
                 f"resource may use it; add a name to the list")
+    mode = entry.get("mode", DEFAULT_ALIAS_MODE)
+    if not isinstance(mode, str) or mode not in ALIAS_MODES:
+        return (f"mount {alias!r}: mode must be ro or rw, not {mode!r}, so it "
+                f"permits no resource")
+    # A read-write mount is a write path into the host; granting one to a
+    # pattern or to several resources is how it would spread unnoticed.
+    if mode == "rw" and not (len(patterns) == 1 and isinstance(patterns[0], str)
+                             and NAME_RE.fullmatch(patterns[0])):
+        return (f"mount {alias!r} is read-write, so its allowed_resources must "
+                f"be exactly one resource name, not a pattern or a list; it "
+                f"permits no resource")
     for pattern in patterns:
         if not isinstance(pattern, str):
             continue
@@ -201,6 +243,20 @@ def _entitlement_problem(alias, name, entry):
         elif name == pattern:
             return None
     return f"mount {alias!r}: {name!r} is not in its allowed_resources"
+
+
+def _network_problem(name, vocabulary):
+    """None if resource `name` may use `network: host`, else the message.
+    Fails closed like _entitlement_problem: no list, a non-list or an empty
+    one allows nobody. Exact names only; a pattern matches nothing."""
+    allowed = vocabulary.get("network_host_allowed")
+    if not isinstance(allowed, list) or not allowed:
+        return ("network: host is allowed only for resources the vocabulary's "
+                "network_host_allowed lists, and it lists none")
+    if not isinstance(name, str) or name not in [a for a in allowed if isinstance(a, str)]:
+        return (f"network: host is allowed only for resources the vocabulary's "
+                f"network_host_allowed lists, and {name!r} is not one")
+    return None
 
 
 def _check_one(stem, raw, vocabulary, site_suffix):
@@ -221,6 +277,12 @@ def _check_one(stem, raw, vocabulary, site_suffix):
     for field in REQUIRED_FIELDS:
         if field not in raw:
             errors.append(_err(stem, field, f"required field {field!r} is missing"))
+
+    network = raw.get("network")
+    host_network = network == NETWORK_HOST
+    if "port" not in raw and not host_network:
+        errors.append(_err(stem, "port", "required field 'port' is missing "
+                           "(it may be omitted only with network: host)"))
 
     name = raw.get("name")
     if "name" in raw:
@@ -286,6 +348,37 @@ def _check_one(stem, raw, vocabulary, site_suffix):
     if not isinstance(state_volume, bool):
         errors.append(_err(stem, "state_volume", "state_volume must be true or false"))
 
+    if "network" in raw:
+        # isinstance first, as for bind: an unhashable value must not reach a
+        # comparison that could raise.
+        if not isinstance(network, str) or not host_network:
+            errors.append(_err(stem, "network", f'network must be "{NETWORK_HOST}" '
+                               "when given"))
+        else:
+            problem = _network_problem(stem, vocabulary)
+            if problem:
+                errors.append(_err(stem, "network", problem))
+
+    secrets_file = raw.get("secrets_file", False)
+    if not isinstance(secrets_file, bool):
+        errors.append(_err(stem, "secrets_file", "secrets_file must be true or false"))
+
+    if "env" in raw:
+        env = raw["env"]
+        if not isinstance(env, dict):
+            errors.append(_err(stem, "env", "env must be a mapping of names to strings"))
+        else:
+            # Every bad entry is named, so one push fixes them all.
+            for key, value in env.items():
+                if not isinstance(key, str) or not ENV_KEY_RE.fullmatch(key):
+                    errors.append(_err(stem, "env",
+                                       f"env name {key!r} must match [A-Z][A-Z0-9_]*"))
+                elif not isinstance(value, str):
+                    errors.append(_err(stem, "env",
+                                       f"env {key} must be a string, not "
+                                       f"{type(value).__name__}; quote it"))
+
+    aliases = sorted(k for k in vocabulary if k not in VOCABULARY_SETTINGS)
     mounts = raw.get("mounts", [])
     resolved = []
     if not isinstance(mounts, list):
@@ -294,10 +387,10 @@ def _check_one(stem, raw, vocabulary, site_suffix):
         for alias in mounts:
             # Lookup by an alias that must be a str: a path string simply
             # fails the membership test, and a dict/list would be unhashable.
-            if not isinstance(alias, str) or alias not in vocabulary:
+            if not isinstance(alias, str) or alias not in aliases:
                 errors.append(_err(stem, "mounts",
                                    f"mount {alias!r} is not an alias in the mount "
-                                   f"vocabulary ({', '.join(sorted(vocabulary))})"))
+                                   f"vocabulary ({', '.join(aliases)})"))
                 continue
             entry = vocabulary[alias]
             # Only for an alias that exists: an unknown alias is already its
@@ -309,7 +402,7 @@ def _check_one(stem, raw, vocabulary, site_suffix):
             resolved.append({
                 "source": entry["source"],
                 "target": entry["target"],
-                "mode": entry["mode"],
+                "mode": entry.get("mode", DEFAULT_ALIAS_MODE),
                 "group": entry.get("group"),
             })
 
@@ -320,6 +413,10 @@ def _check_one(stem, raw, vocabulary, site_suffix):
     valid.update(
         bind=bind, state=state, state_volume=state_volume,
         mounts=resolved, action=STATE_ACTIONS[state],
+        # port is None for a host-networked resource that gives none; network
+        # is None unless "host". env is NOT defaulted: absent stays absent, so
+        # a renderer can tell an empty env from an undeclared one.
+        port=raw.get("port"), network=network, secrets_file=secrets_file,
         awaiting_image=not IMAGE_RE.fullmatch(raw["image"]),
     )
     return valid, []
@@ -339,7 +436,8 @@ def validate(declarations, vocabulary, site_suffix):
     # Cross-declaration: only over what passed the per-file checks.
     by_port = {}
     for v in valid:
-        by_port.setdefault(v["port"], []).append(v["name"])
+        if v["port"] is not None:
+            by_port.setdefault(v["port"], []).append(v["name"])
     clashing = {n for names in by_port.values() if len(names) > 1 for n in names}
     for v in valid:
         if v["name"] in clashing:

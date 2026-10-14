@@ -30,5 +30,29 @@
   "bind-public.yml": {
     "field": "bind",
     "message": "must be one of"
+  },
+  "env-lowercase-key.yml": {
+    "field": "env",
+    "message": "must match"
+  },
+  "env-non-string-value.yml": {
+    "field": "env",
+    "message": "must be a string"
+  },
+  "network-not-allowed.yml": {
+    "field": "network",
+    "message": "network_host_allowed"
+  },
+  "network-bridge.yml": {
+    "field": "network",
+    "message": "must be \"host\""
+  },
+  "port-missing.yml": {
+    "field": "port",
+    "message": "required field 'port' is missing"
+  },
+  "rw-alias-not-entitled.yml": {
+    "field": "mounts",
+    "message": "is not in its allowed_resources"
   }
 }
