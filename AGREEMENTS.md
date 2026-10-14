@@ -177,9 +177,14 @@ sudoers; it never starts anything else on this path.
     failed.
   - `lychee-op-update: done`: the update and the start both returned 0.
 
-  The line is absent when the run was killed (its timeout, or the service being
-  stopped). Readers take the last line starting with `lychee-op-update: `,
-  since the update's own output comes before it.
+  The line is absent whenever the script did not run to completion: the run was
+  killed (its timeout, or the service being stopped), the action's `flock -n`
+  refused because another action holds the unit's lock, or the script failed
+  before reaching the line (the marker write, for example). In each case the
+  update service's result still records the failure. The line is printed after
+  a newline of its own, so it always begins a line. Readers take the last line
+  starting with `lychee-op-update: `, because other output (the recorder's or
+  the restart guard's) can follow it in the log.
 - **Timeouts.** `TimeoutStartSec` is 300 for `start`, `stop` and `restart`, and
   1800 for `update`.
 - **Result.** As the action service exits, it writes
