@@ -1,0 +1,15 @@
+# A host-networked service with a hand-placed secrets file and four aliases.
+# No port: a host-network container publishes no port mapping.
+name:         swee
+image:        ghcr.io/lycheehome/swee:2.13.0
+state:        running
+network:      host
+state_volume: true
+secrets_file: true
+mounts:       [palworld_events, palworld_config, unattended_upgrades_log, host_ops_socket]
+env:
+  REST_HOST: "127.0.0.1"
+  REST_PORT: "8212"
+  PALWORLD_SETTINGS_INI_PATH: /palworld-config/PalWorldSettings.ini
+  PALWORLD_EVENTS_FILE: /palworld-events/palworld.jsonl
+  HOST_OPS_SOCKET: /run/lychee-admin/clients/swee/api.sock

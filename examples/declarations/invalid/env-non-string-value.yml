@@ -1,0 +1,5 @@
+name:  swee
+image: ghcr.io/lycheehome/swee:2.13.0
+network: host
+env:
+  REST_PORT: 8212

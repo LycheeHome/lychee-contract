@@ -1,0 +1,5 @@
+name:  swee
+image: ghcr.io/lycheehome/swee:2.13.0
+network: host
+env:
+  rest_host: "127.0.0.1"

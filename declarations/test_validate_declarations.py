@@ -635,6 +635,256 @@ class StateTableTests(unittest.TestCase):
         self.assertEqual(valid[0]["action"], "up")
 
 
+# The real vocabulary, unrendered: the double-brace sources and groups are
+# opaque strings to the validator. Loaded rather than copied so the swee tests
+# exercise the aliases and the network list that actually ship.
+import yaml  # noqa: E402  (PyYAML is already the validator's own dependency)
+
+REAL_VOCAB = yaml.safe_load(
+    (MODULE_PATH.parent / "vocabulary.yml").read_text())
+
+
+def swee(**over):
+    """The spec's swee declaration (lychee-resources' swee.yml), with
+    overrides. None removes the key."""
+    d = {
+        "name": "swee",
+        "image": "ghcr.io/lycheehome/swee:2.13.0",
+        "state": "running",
+        "network": "host",
+        "state_volume": True,
+        "secrets_file": True,
+        "mounts": ["palworld_events", "palworld_config",
+                   "unattended_upgrades_log", "host_ops_socket"],
+        "env": {
+            "REST_HOST": "127.0.0.1",
+            "REST_PORT": "8212",
+            "PALWORLD_SETTINGS_INI_PATH": "/palworld-config/PalWorldSettings.ini",
+            "HOST_OPS_SOCKET": "/run/lychee-admin/clients/swee/api.sock",
+        },
+    }
+    d.update(over)
+    return {k: v for k, v in d.items() if v is not None}
+
+
+def run_real(declarations):
+    return vd.validate(declarations, REAL_VOCAB, SITE_SUFFIX)
+
+
+class DeclarationCapabilityTests(unittest.TestCase):
+    """v1.4: env, secrets_file, network: host, and swee's mount aliases."""
+
+    def assertRejectedFor(self, declarations, name, field, message=None,
+                          vocabulary=None):
+        valid, errors = vd.validate(declarations, vocabulary or REAL_VOCAB,
+                                    SITE_SUFFIX)
+        self.assertNotIn(name, [v["name"] for v in valid])
+        matching = [e for e in errors if e["name"] == name and e["field"] == field]
+        self.assertTrue(matching, f"no error for {name}.{field}; got {errors}")
+        if message is not None:
+            self.assertTrue(any(message in e["message"] for e in matching),
+                            f"no {name}.{field} error contains {message!r}; got {matching}")
+        return errors
+
+    # --- acceptance -------------------------------------------------------
+
+    def test_accepts_the_swee_declaration(self):
+        valid, errors = run_real({"swee": swee()})
+        self.assertEqual(errors, [])
+        v = valid[0]
+        self.assertEqual(v["network"], "host")
+        self.assertIsNone(v["port"])
+        self.assertIs(v["secrets_file"], True)
+        self.assertEqual(v["env"]["REST_PORT"], "8212")
+        self.assertEqual(
+            [(m["target"], m["mode"]) for m in v["mounts"]],
+            [("/palworld-events", "ro"), ("/palworld-config", "rw"),
+             ("/var/log/unattended-upgrades", "ro"),
+             ("/run/lychee-admin/clients/swee", "ro")])
+        # Every swee alias carries a group: a mount without one is unreadable
+        # through the directories' own modes.
+        self.assertTrue(all(m["group"] for m in v["mounts"]), v["mounts"])
+
+    def test_the_new_aliases_are_swee_only(self):
+        for alias in ("palworld_events", "palworld_config",
+                      "unattended_upgrades_log", "host_ops_socket"):
+            with self.subTest(alias=alias):
+                self.assertEqual(REAL_VOCAB[alias]["allowed_resources"], ["swee"])
+
+    def test_the_vocabulary_names_no_host_path(self):
+        # The contract is public: a source is a group_vars variable, never a
+        # literal path, and a group is a variable, never a number.
+        for alias, entry in REAL_VOCAB.items():
+            if alias == "network_host_allowed":
+                continue
+            with self.subTest(alias=alias):
+                self.assertRegex(entry["source"], r"^\{\{ [a-z_]+ \}\}$")
+                self.assertRegex(str(entry["group"]), r"^\{\{ [a-z_]+ \}\}$")
+
+    def test_the_palsave_api_declaration_is_unchanged_by_v1_4(self):
+        valid, errors = run_real({"palsave-api": decl()})
+        self.assertEqual(errors, [])
+        v = valid[0]
+        self.assertEqual(v["port"], 8788)
+        self.assertIsNone(v["network"])
+        self.assertIs(v["secrets_file"], False)
+        # Absent stays absent: the transition template tells "declared" from
+        # "not declared" by the key, so the validator must not default it.
+        self.assertNotIn("env", v)
+
+    def test_an_empty_env_is_accepted(self):
+        valid, errors = run_real({"swee": swee(env={})})
+        self.assertEqual(errors, [])
+        self.assertEqual(valid[0]["env"], {})
+
+    def test_port_is_optional_with_host_networking_and_may_still_be_given(self):
+        valid, errors = run_real({"swee": swee(port=8790)})
+        self.assertEqual(errors, [])
+        self.assertEqual(valid[0]["port"], 8790)
+
+    def test_portless_declarations_do_not_clash_with_each_other(self):
+        vocab = dict(REAL_VOCAB, network_host_allowed=["swee", "other"])
+        valid, errors = vd.validate(
+            {"swee": swee(), "other": swee(name="other", mounts=[])},
+            vocab, SITE_SUFFIX)
+        self.assertEqual(errors, [])
+        self.assertEqual(sorted(v["name"] for v in valid), ["other", "swee"])
+
+    # --- env ----------------------------------------------------------------
+
+    def test_rejects_an_env_key_that_is_not_upper_snake_case(self):
+        for key in ("rest_host", "Rest_Host", "1PORT", "_X", "A-B", "A B",
+                    "X\n", ""):
+            with self.subTest(key=key):
+                self.assertRejectedFor(
+                    {"swee": swee(env={key: "x"})}, "swee", "env",
+                    "must match")
+
+    def test_rejects_a_non_string_env_value(self):
+        for value in (8212, True, None, ["a"], {"a": "b"}, 1.5):
+            with self.subTest(value=value):
+                self.assertRejectedFor(
+                    {"swee": swee(env={"REST_PORT": value})}, "swee", "env",
+                    "must be a string")
+
+    def test_rejects_a_non_string_env_key(self):
+        self.assertRejectedFor({"swee": swee(env={1: "x"})}, "swee", "env")
+
+    def test_rejects_an_env_that_is_not_a_mapping(self):
+        for env in (["A=b"], "A=b", True):
+            with self.subTest(env=env):
+                self.assertRejectedFor({"swee": swee(env=env)}, "swee", "env",
+                                       "mapping")
+
+    def test_every_bad_env_entry_is_named(self):
+        _, errors = run_real({"swee": swee(env={"lower": "x", "OK": 1})})
+        msgs = [e["message"] for e in errors if e["field"] == "env"]
+        self.assertEqual(len(msgs), 2, errors)
+
+    # --- secrets_file -------------------------------------------------------
+
+    def test_rejects_a_non_boolean_secrets_file(self):
+        for value in ("yes", 1, "/etc/lychee-secrets/swee.env"):
+            with self.subTest(value=value):
+                self.assertRejectedFor({"swee": swee(secrets_file=value)},
+                                       "swee", "secrets_file")
+
+    # --- network ------------------------------------------------------------
+
+    def test_rejects_host_networking_for_a_resource_not_listed(self):
+        self.assertRejectedFor(
+            {"palsave-api": decl(network="host")}, "palsave-api", "network",
+            "network_host_allowed")
+
+    def test_rejects_a_network_other_than_host(self):
+        for network in ("bridge", "none", "container:x", "HOST", "", ["host"],
+                        {"a": "b"}, True):
+            with self.subTest(network=network):
+                self.assertRejectedFor({"swee": swee(network=network)},
+                                       "swee", "network")
+
+    def test_rejects_host_networking_for_a_site(self):
+        vocab = dict(REAL_VOCAB, network_host_allowed=["swee"])
+        self.assertRejectedFor(
+            {"blog-lychee-land": {"name": "blog-lychee-land",
+                                  "image": "ghcr.io/lycheehome/blog",
+                                  "network": "host"}},
+            "blog-lychee-land", "network", vocabulary=vocab)
+
+    def test_host_networking_fails_closed_without_the_list(self):
+        for vocab_list in (None, [], "swee", {"swee": True}, ["*"], ["*ee"]):
+            with self.subTest(network_host_allowed=vocab_list):
+                vocab = {k: v for k, v in REAL_VOCAB.items()
+                         if k != "network_host_allowed"}
+                if vocab_list is not None:
+                    vocab["network_host_allowed"] = vocab_list
+                self.assertRejectedFor({"swee": swee(mounts=[])}, "swee",
+                                       "network", vocabulary=vocab)
+
+    def test_port_is_required_without_host_networking(self):
+        self.assertRejectedFor({"swee": swee(network=None)}, "swee", "port",
+                               "required")
+        self.assertRejectedFor({"palsave-api": decl(port=None)},
+                               "palsave-api", "port", "required")
+
+    # --- mount aliases and their modes --------------------------------------
+
+    def test_rejects_palworld_config_on_palsave_api(self):
+        self.assertRejectedFor(
+            {"palsave-api": decl(mounts=["palworld_saves", "palworld_config"])},
+            "palsave-api", "mounts", "is not in its allowed_resources")
+
+    def test_network_host_allowed_is_not_a_mount_alias(self):
+        valid, errors = run_real({"swee": swee(mounts=["network_host_allowed"])})
+        self.assertEqual(valid, [])
+        self.assertEqual(fields(errors), ["mounts"])
+        self.assertIn("is not an alias", errors[0]["message"])
+        listing = errors[0]["message"].split("(", 1)[1]
+        self.assertNotIn("network_host_allowed", listing)
+
+    def rw_vocab(self, **entry):
+        alias = {"source": "{{ x_dir }}", "target": "/x", "mode": "rw",
+                 "group": "{{ x_gid }}", "allowed_resources": ["swee"]}
+        alias.update(entry)
+        return dict(REAL_VOCAB, x_rw={k: v for k, v in alias.items()
+                                      if v is not None})
+
+    def test_a_rw_alias_with_one_exact_resource_is_accepted(self):
+        valid, errors = vd.validate({"swee": swee(mounts=["x_rw"])},
+                                    self.rw_vocab(), SITE_SUFFIX)
+        self.assertEqual(errors, [])
+        self.assertEqual(valid[0]["mounts"][0]["mode"], "rw")
+
+    def test_a_rw_alias_with_two_allowed_resources_entitles_nobody(self):
+        for allowed in (["swee", "palsave-api"], ["*"], ["*-lychee-land"],
+                        ["*swee"]):
+            with self.subTest(allowed=allowed):
+                self.assertRejectedFor(
+                    {"swee": swee(mounts=["x_rw"])}, "swee", "mounts",
+                    "read-write", vocabulary=self.rw_vocab(allowed_resources=allowed))
+
+    def test_an_alias_whose_mode_is_not_ro_or_rw_entitles_nobody(self):
+        # "Without mode: rw": a spelling that is not exactly `rw` must not
+        # reach compose as some other mode, nor quietly become read-only.
+        for mode in ("RW", "read-write", "rw,z", "rw ", True, ["rw"]):
+            with self.subTest(mode=mode):
+                self.assertRejectedFor(
+                    {"swee": swee(mounts=["x_rw"])}, "swee", "mounts",
+                    "mode", vocabulary=self.rw_vocab(mode=mode))
+
+    def test_an_alias_with_no_mode_is_read_only(self):
+        valid, errors = vd.validate({"swee": swee(mounts=["x_rw"])},
+                                    self.rw_vocab(mode=None), SITE_SUFFIX)
+        self.assertEqual(errors, [])
+        self.assertEqual(valid[0]["mounts"][0]["mode"], "ro")
+
+    def test_the_shipped_vocabulary_has_exactly_one_rw_alias(self):
+        rw = sorted(a for a, e in REAL_VOCAB.items()
+                    if isinstance(e, dict) and e.get("mode") == "rw")
+        self.assertEqual(rw, ["palworld_config"])
+        self.assertEqual(REAL_VOCAB["network_host_allowed"], ["swee"])
+
+
 class ConstantsTests(unittest.TestCase):
     def test_constants_tag_pattern_matches_the_validator(self):
         constants = json.loads(

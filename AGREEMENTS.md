@@ -92,6 +92,45 @@ port is only the host side of the publish), has a Docker `HEALTHCHECK`, and
 runs with a read-only root filesystem whose only writable paths are tmpfs
 mounts at `/tmp` and `/app/.next/cache`. A site has no volumes.
 
+## A-DECL-1 What a declaration may carry
+
+A declaration in lychee-resources carries only `name`, `image`, `state`,
+`port`, `bind`, `mounts`, `state_volume`, `env`, `secrets_file` and `network`;
+`declarations/validate_declarations.py` rejects any other field, and the
+reconciler renders nothing it has not validated. Since v1.4.0:
+
+- **`env`** is a mapping of non-secret settings: each name matches
+  `[A-Z][A-Z0-9_]*` in full, and each value is a string (quote numbers). The
+  reconciler passes each one to the container exactly as written; nothing in
+  a value is interpolated.
+- **`secrets_file: true`** gives the container the environment file
+  `/etc/lychee-secrets/<name>.env`. The operator places it by hand, `0600
+  root:root`; the reconciler refuses to deploy the resource while it is
+  missing or has any other owner or mode, and pruning the resource never
+  deletes it. The declaration names no path: only the flag.
+- **`network`** may only be `host`, which runs the container in the host's
+  network namespace, and only for a resource the vocabulary's top-level
+  `network_host_allowed` lists by exact name (today `swee`). `port` is
+  required unless `network: host` is set; a host-networked container publishes
+  no port mapping, and a `port` it does give still takes part in the
+  duplicate-port check.
+- **`mounts`** names aliases in the vocabulary (`declarations/vocabulary.yml`,
+  identical in content to lychee-ops' `mounts.yml`), never a path. Each alias
+  gives its host path and group as lychee-ops `group_vars` variables, a
+  container `target`, a `mode` and `allowed_resources`. `mode` is `ro` when
+  absent; `rw` must be written out, and a read-write alias entitles exactly
+  one resource by exact name, or nobody. The mode and the group reach the
+  container as written: the volume carries `:ro` or `:rw`, and the alias's
+  group is added to the container's supplementary groups.
+
+| Alias | Target | Mode | Group | Allowed |
+|---|---|---|---|---|
+| `palworld_saves` | `/saves` | ro | `palworld` | `palsave-api` |
+| `palworld_events` | `/palworld-events` | ro | `palworld-events` | `swee` |
+| `palworld_config` | `/palworld-config` | rw | `palworld` | `swee` |
+| `unattended_upgrades_log` | `/var/log/unattended-upgrades` | ro | `adm` | `swee` |
+| `host_ops_socket` | `/run/lychee-admin/clients/swee` | ro | `swee-api` | `swee` |
+
 ## A-CADDY-1 The Caddyfile keeps the `conf.d` import
 
 lychee-ops ensures `/etc/caddy/Caddyfile` contains the line
@@ -211,6 +250,12 @@ sudoers; it never starts anything else on this path.
   Its directory is created by lychee-ops (`tmpfiles.d`) as `0750
   lychee-admin:<client>-api`, and the group `<client>-api` holds exactly the
   client's own user, which is what actually restricts who can connect.
+  A client that runs as a container reaches the same socket through a
+  read-only bind mount of its directory (the `host_ops_socket` alias,
+  A-DECL-1) and holds `<client>-api` as a supplementary group in the
+  container; the directory, not the socket, is mounted, so a socket
+  lychee-admin recreates is the one the client sees. The socket path is the
+  same inside the container as on the host.
 - **Grants.** `clients_file` (`/etc/lychee-admin/clients.json`, `0640
   root:lychee-admin`, non-secret) has the shape of `schemas/clients.schema.json`:
   `{"clients": [{"name", "grants": {"<unit>": ["<action>", ...]}}]}`, `name`

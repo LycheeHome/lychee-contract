@@ -1,9 +1,61 @@
 # Mirrors the entitlement entries of lychee-ops' mounts.yml, unrendered: the
 # double-brace values are literal text here, which the validator treats as
 # opaque strings. site_files is deliberately absent.
+#
+# The contract is public, so every host path and every gid is named by a
+# lychee-ops group_vars variable, never written out. A `target` is a path
+# inside the container.
+#
+# `mode` is ro (the default when absent) or rw, nothing else. A read-write
+# alias must say `mode: rw` and name exactly one resource in
+# allowed_resources (an exact name, never a pattern); otherwise it entitles
+# nobody.
+#
+# network_host_allowed is not an alias: it lists, by exact name, the resources
+# a declaration may give `network: host`. Absent, empty or not a list, it
+# allows none.
+network_host_allowed: [swee]
+
 palworld_saves:
   source: "{{ palworld_backup_dir }}"
   target: /saves
   mode: ro
   group: "{{ palworld_gid }}"
   allowed_resources: [palsave-api]
+
+# The game server's journal lines, written as JSON lines by lychee-ops'
+# palworld-events forwarder. The directory's group holds swee alone.
+palworld_events:
+  source: "{{ palworld_events_dir }}"
+  target: /palworld-events
+  mode: ro
+  group: "{{ palworld_events_gid }}"
+  allowed_resources: [swee]
+
+# The game's settings directory (Pal/Saved/Config/LinuxServer), which swee's
+# /config set rewrites. The first read-write alias.
+palworld_config:
+  source: "{{ palworld_config_dir }}"
+  target: /palworld-config
+  mode: rw
+  group: "{{ palworld_gid }}"
+  allowed_resources: [swee]
+
+# unattended-upgrades' logs, read to explain why the server went down. The
+# group is adm inside the container only; swee's host account leaves adm.
+unattended_upgrades_log:
+  source: "{{ unattended_upgrades_log_dir }}"
+  target: /var/log/unattended-upgrades
+  mode: ro
+  group: "{{ adm_gid }}"
+  allowed_resources: [swee]
+
+# swee's client socket directory (A-OPS-1). The directory is mounted, not the
+# socket, so a socket lychee-admin recreates is still the one swee sees, and
+# read-only still lets a client connect to the socket inside it.
+host_ops_socket:
+  source: "{{ swee_client_socket_dir }}"
+  target: /run/lychee-admin/clients/swee
+  mode: ro
+  group: "{{ swee_api_gid }}"
+  allowed_resources: [swee]
