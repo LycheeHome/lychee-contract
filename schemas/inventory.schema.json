@@ -28,7 +28,7 @@
         },
         "target": { "description": "The pinned tag, or ''.", "type": "string" },
         "commit": { "description": "The installed commit, or ''.", "type": "string" },
-        "result": { "enum": ["deployed", "skipped", "blocked", "failed", "awaiting-image", "image-unavailable", "provenance-failed", "host-pending", "unknown"] },
+        "result": { "enum": ["deployed", "skipped", "blocked", "failed", "awaiting-image", "unknown"] },
         "gate": { "type": "string" },
         "gate_code": {
           "description": "From the status file's gate_code; absent when the status file has none or the entry is unreconciled. See A-GATE-1.",
