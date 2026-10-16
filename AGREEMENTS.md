@@ -195,7 +195,8 @@ The inventory carries the code through when the entry has a status file.
 | lychee_admin_app | `commit … exceeded the retry cap (…)` (blocked) | `retry-capped` |
 | lychee_admin_app | `could not pull <ref>: …` (blocked) | `image-unavailable` |
 | lychee_admin_app | `provenance check failed: …` (blocked) | `provenance-failed` |
-| lychee_admin_app | `lychee-admin.service does not run from <root>/current yet …` (blocked) | `host-pending` |
+| lychee_admin_app | `the loaded lychee-admin.service does not run from <root>/current yet; …`, `… changed on disk and systemd has not reloaded it; …`, `could not read the loaded lychee-admin.service: …` (blocked) | `host-pending` |
+| lychee_admin_app | `no github_api_token on this host: …` (blocked) | `token-missing` |
 | swee_app | `no completed CI runs for <tag>` (blocked) | `ci-pending` |
 | swee_app | `no job named test in N completed run(s) for <tag>` (blocked) | `ci-unknown` |
 | swee_app | `pin unchanged (…)` (skipped) | `up-to-date` |

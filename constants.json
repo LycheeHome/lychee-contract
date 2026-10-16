@@ -14,7 +14,7 @@
   "release_tag_pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
   "reserved_ports": [8787, 2019],
   "site_min_port": 1024,
-  "gate_codes": ["ok", "up-to-date", "ci-pending", "ci-failed", "ci-unknown", "env-mismatch", "retry-capped", "pin-unresolved", "declaration-rejected", "not-applied", "awaiting-image", "image-unavailable", "provenance-failed", "host-pending", "unknown"],
+  "gate_codes": ["ok", "up-to-date", "ci-pending", "ci-failed", "ci-unknown", "env-mismatch", "retry-capped", "pin-unresolved", "declaration-rejected", "not-applied", "awaiting-image", "image-unavailable", "provenance-failed", "host-pending", "token-missing", "unknown"],
   "host_actions": ["start", "stop", "restart", "update"],
   "op_unit_pattern": "lychee-op-{unit}-{action}.service",
   "op_sudo_argv": ["/usr/bin/systemctl", "start", "--no-block", "{op_unit}"],
