@@ -47,7 +47,8 @@ SCHEMAS = ROOT / "schemas"
 # shape directory under examples/ -> its schema
 SHAPES = ("inventory", "app-status", "resource-status", "clients", "op-result")
 CONSTANT_KEYS = frozenset((
-    "ci_job", "domain", "site_suffix", "site_name_pattern",
+    "ci_job", "release_job", "release_image", "release_tag_format", "release_signer_workflow",
+    "domain", "site_suffix", "site_name_pattern",
     "max_resource_name_length", "image_prefix", "tag_pattern", "floating_tags",
     "release_tag_pattern", "reserved_ports", "site_min_port", "paths", "gate_codes",
     "host_actions", "op_unit_pattern", "op_sudo_argv", "client_socket_path", "clients_file", "op_result_path",

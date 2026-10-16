@@ -32,7 +32,7 @@
         "gate": { "type": "string" },
         "gate_code": {
           "description": "From the status file's gate_code; absent when the status file has none or the entry is unreconciled. See A-GATE-1.",
-          "enum": ["ok", "up-to-date", "ci-pending", "ci-failed", "ci-unknown", "env-mismatch", "retry-capped", "pin-unresolved", "declaration-rejected", "not-applied", "awaiting-image", "unknown"]
+          "enum": ["ok", "up-to-date", "ci-pending", "ci-failed", "ci-unknown", "env-mismatch", "retry-capped", "pin-unresolved", "declaration-rejected", "not-applied", "awaiting-image", "image-unavailable", "provenance-failed", "host-pending", "unknown"]
         },
         "last_run": {
           "description": "The status file's last_run, or '' when the status file has none (the template's fallback).",

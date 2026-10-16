@@ -21,7 +21,7 @@
         },
         "gate_code": {
           "description": "Machine-readable form of `gate`, from a closed set. The mapping from gate text and result to code is A-GATE-1 in AGREEMENTS.md.",
-          "enum": ["ok", "up-to-date", "ci-pending", "ci-failed", "ci-unknown", "env-mismatch", "retry-capped", "pin-unresolved", "declaration-rejected", "not-applied", "awaiting-image", "unknown"]
+          "enum": ["ok", "up-to-date", "ci-pending", "ci-failed", "ci-unknown", "env-mismatch", "retry-capped", "pin-unresolved", "declaration-rejected", "not-applied", "awaiting-image", "image-unavailable", "provenance-failed", "host-pending", "unknown"]
         },
         "failed_step": {
           "description": "The task that failed and its error, or '' when nothing failed.",
