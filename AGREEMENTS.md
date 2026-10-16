@@ -21,6 +21,16 @@ The name is the job's reported name: a `name:` override on the job replaces
 it, and renaming the job key or adding an override silently stops every
 deploy.
 
+## A-CI-2 The release job is named `release`, and the deploy gate requires it green
+
+lychee-admin's CI has a job named exactly `constants.json` `release_job`
+(`release`). lychee-ops' gate applies A-CI-1's rule to it as well: every job of
+that name, in every completed run for the target commit, must have concluded
+`success`, and no such job means `missing`, which blocks. The job runs only on
+pushes to `main`, after `test`. As in A-CI-1, a `name:` override replaces the
+reported name, so renaming the key or adding an override silently stops every
+deploy.
+
 ## A-ENV-1 `DOMAIN` in lychee-admin's `.env` equals `domain`
 
 lychee-ops reads `DOMAIN` out of `/opt/lychee-admin/.env` before deploying and
@@ -145,6 +155,19 @@ installs with `npm ci --omit=dev`, and runs `node dist/server.js` from the
 install directory. lychee-admin keeps those commands working and that entry
 point in place.
 
+## A-BUILD-2 lychee-admin's release artifact
+
+lychee-admin's `release` job publishes one image per `main` commit: image
+`constants.json` `release_image`, tag `release_tag_format` with `{commit}` the
+40-character lowercase hex commit sha, platform `linux/amd64`. The tree is at
+`/app` and holds exactly `dist/`, `public/`, `package.json`, `package-lock.json`
+and `node_modules/` (from `npm ci --omit=dev --ignore-scripts`); the entry point
+is `/app/dist/server.js`. Build provenance is signed by `release_signer_workflow`
+on `refs/heads/main` and pushed to the registry with the image. lychee-ops
+verifies it before unpacking and installs under `paths.app_release_root` as
+`releases/<commit>`, with a `current` symlink to the live one. A-BUILD-1 stays
+until lychee-ops stops building; a later release removes it under A-GROW-1.
+
 ## A-GROW-1 Shapes only grow; removal goes reader, writer, contract
 
 Readers ignore fields they do not know. Adding a field goes contract, then
@@ -167,9 +190,12 @@ The inventory carries the code through when the entry has a status file.
 | lychee_admin_app | `could not read …/.env`, `DOMAIN missing …`, `DOMAIN in .env is …`, `RESERVED_HOSTNAMES … does not include …` (blocked) | `env-mismatch` |
 | lychee_admin_app | `up to date` (skipped) | `up-to-date` |
 | lychee_admin_app, swee_app | `ok` (deployed or failed) | `ok` |
-| lychee_admin_app, swee_app | `job test concluded: <list>` where every item is `in_progress` or `missing` (blocked) | `ci-pending` |
-| lychee_admin_app, swee_app | `job test concluded: <list>` with any other item (blocked) | `ci-failed` |
+| lychee_admin_app, swee_app | `job test concluded: <list>` (or `job release concluded: <list>`, lychee_admin_app only) where every item is `in_progress` or `missing` (blocked) | `ci-pending` |
+| lychee_admin_app, swee_app | `job test concluded: <list>` (or `job release concluded: <list>`, lychee_admin_app only) with any other item (blocked) | `ci-failed` |
 | lychee_admin_app | `commit … exceeded the retry cap (…)` (blocked) | `retry-capped` |
+| lychee_admin_app | `could not pull <ref>: …` (blocked) | `image-unavailable` |
+| lychee_admin_app | `provenance check failed: …` (blocked) | `provenance-failed` |
+| lychee_admin_app | `lychee-admin.service does not run from <root>/current yet …` (blocked) | `host-pending` |
 | swee_app | `no completed CI runs for <tag>` (blocked) | `ci-pending` |
 | swee_app | `no job named test in N completed run(s) for <tag>` (blocked) | `ci-unknown` |
 | swee_app | `pin unchanged (…)` (skipped) | `up-to-date` |
