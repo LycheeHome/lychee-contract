@@ -148,13 +148,6 @@ lychee-ops ensures `/etc/caddy/Caddyfile` contains the line
 Caddyfile as text and must preserve that line, and must not parse or list what
 the import brings in.
 
-## A-BUILD-1 lychee-admin's build
-
-lychee-ops builds lychee-admin with `npm ci`, then `npm run build`, then
-installs with `npm ci --omit=dev`, and runs `node dist/server.js` from the
-install directory. lychee-admin keeps those commands working and that entry
-point in place.
-
 ## A-BUILD-2 lychee-admin's release artifact
 
 lychee-admin's `release` job publishes one image per `main` commit: image
@@ -165,8 +158,7 @@ and `node_modules/` (from `npm ci --omit=dev --ignore-scripts`); the entry point
 is `/app/dist/server.js`. Build provenance is signed by `release_signer_workflow`
 on `refs/heads/main` and pushed to the registry with the image. lychee-ops
 verifies it before unpacking and installs under `paths.app_release_root` as
-`releases/<commit>`, with a `current` symlink to the live one. A-BUILD-1 stays
-until lychee-ops stops building; a later release removes it under A-GROW-1.
+`releases/<commit>`, with a `current` symlink to the live one.
 
 ## A-GROW-1 Shapes only grow; removal goes reader, writer, contract
 
