@@ -40,6 +40,11 @@
         },
         "failed_attempts": { "type": "integer", "minimum": 0 },
         "available": { "type": "string", "minLength": 1 },
+        "lifetime_id": {
+          "description": "The id of this name's open lifetime in events.json (A-HIST-1). Absent on a tick where the feed could not be computed. Present on unreconciled entries too.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
         "failed_step": { "type": "string", "minLength": 1 },
         "actions": {
           "description": "Host actions this unit offers (A-OPS-1). Unit entries only; a container entry may not carry it.",

@@ -1,0 +1,23 @@
+{
+  "generated": "2026-10-28T09:15:00Z",
+  "services": [
+    {
+      "name": "blog-lychee-land",
+      "kind": "container",
+      "container": "blog-lychee-land",
+      "group": "service",
+      "reconciled": false,
+      "lifetime_id": "6f1c2b9e-3a4d-5e8f-9b0a-1c2d3e4f5a6b"
+    },
+    {
+      "name": "lychee-admin",
+      "kind": "unit",
+      "unit": "lychee-admin.service",
+      "group": "service",
+      "reconciled": true,
+      "result": "skipped",
+      "failed_attempts": 0,
+      "lifetime_id": "0a1b2c3d-4e5f-5a6b-8c7d-9e0f1a2b3c4d"
+    }
+  ]
+}

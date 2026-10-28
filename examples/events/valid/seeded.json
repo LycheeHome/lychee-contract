@@ -1,0 +1,36 @@
+{
+  "lifetimes": [
+    {
+      "id": "6f1c2b9e-3a4d-5e8f-9b0a-1c2d3e4f5a6b",
+      "name": "blog-lychee-land",
+      "kind": "container",
+      "added_at": "2026-10-28T09:14:02Z",
+      "removed_at": null,
+      "last": {
+        "result": "deployed",
+        "version": "1.2.0",
+        "gate_code": "ok",
+        "failed_step": "",
+        "state": "running",
+        "failed_attempts": 0
+      },
+      "events": []
+    },
+    {
+      "id": "0a1b2c3d-4e5f-5a6b-8c7d-9e0f1a2b3c4d",
+      "name": "lychee-admin",
+      "kind": "unit",
+      "added_at": "2026-10-28T09:14:02Z",
+      "removed_at": null,
+      "last": {
+        "result": "skipped",
+        "version": "0123abc",
+        "gate_code": "up-to-date",
+        "failed_step": "",
+        "state": "",
+        "failed_attempts": 0
+      },
+      "events": []
+    }
+  ]
+}

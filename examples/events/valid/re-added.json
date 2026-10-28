@@ -1,0 +1,50 @@
+{
+  "lifetimes": [
+    {
+      "id": "6f1c2b9e-3a4d-5e8f-9b0a-1c2d3e4f5a6b",
+      "name": "demo-lychee-land",
+      "kind": "container",
+      "added_at": "2026-10-28T09:14:02Z",
+      "removed_at": "2026-11-02T12:00:00Z",
+      "last": {
+        "result": "deployed",
+        "version": "0.1.0",
+        "gate_code": "ok",
+        "failed_step": "",
+        "state": "running",
+        "failed_attempts": 0
+      },
+      "events": [
+        {
+          "at": "2026-10-28T09:14:02Z",
+          "type": "added"
+        },
+        {
+          "at": "2026-11-02T12:00:00Z",
+          "type": "removed"
+        }
+      ]
+    },
+    {
+      "id": "b7e2d1c0-9f8a-5b4c-8d3e-2f1a0b9c8d7e",
+      "name": "demo-lychee-land",
+      "kind": "container",
+      "added_at": "2026-11-05T08:00:00Z",
+      "removed_at": null,
+      "last": {
+        "result": "skipped",
+        "version": "",
+        "gate_code": "awaiting-image",
+        "failed_step": "",
+        "state": "",
+        "failed_attempts": 0
+      },
+      "events": [
+        {
+          "at": "2026-11-05T08:00:00Z",
+          "type": "added"
+        }
+      ]
+    }
+  ]
+}

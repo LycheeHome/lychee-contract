@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LycheeHome/lychee-contract/schemas/events.schema.json",
+  "title": "Reconciler run history (events.json)",
+  "description": "Published by lychee-ops' inventory role next to services.json. A feed of lifetimes and their events; see A-HIST-1. This schema describes producer output: readers ignore unknown event types.",
+  "type": "object",
+  "required": [
+    "lifetimes"
+  ],
+  "properties": {
+    "lifetimes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/lifetime"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "lifetime": {
+      "description": "One continuous appearance of a name in the inventory. At most one lifetime per name is open (removed_at null); see A-HIST-1.",
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "added_at",
+        "removed_at",
+        "last",
+        "events"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "unit",
+            "container"
+          ]
+        },
+        "added_at": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "removed_at": {
+          "anyOf": [
+            {
+              "$ref": "common.schema.json#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last": {
+          "description": "The service's state as of its most recent observation. Writer bookkeeping, outside the reader contract: readers must not use it.",
+          "type": "object"
+        },
+        "events": {
+          "description": "Oldest first; at most the last 50.",
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/event_added"
+              },
+              {
+                "$ref": "#/$defs/event_deployed"
+              },
+              {
+                "$ref": "#/$defs/event_stopped"
+              },
+              {
+                "$ref": "#/$defs/event_down"
+              },
+              {
+                "$ref": "#/$defs/event_failed"
+              },
+              {
+                "$ref": "#/$defs/event_blocked"
+              },
+              {
+                "$ref": "#/$defs/event_awaiting_image"
+              },
+              {
+                "$ref": "#/$defs/event_recovered"
+              },
+              {
+                "$ref": "#/$defs/event_removed"
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_added": {
+      "description": "A name with no open lifetime appeared in the inventory (never emitted on the seed tick).",
+      "type": "object",
+      "required": [
+        "at",
+        "type"
+      ],
+      "properties": {
+        "at": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "type": {
+          "const": "added"
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_deployed": {
+      "description": "The installed version changed to a non-empty value; from is null when nothing was installed.",
+      "type": "object",
+      "required": [
+        "at",
+        "type",
+        "from",
+        "to"
+      ],
+      "properties": {
+        "at": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "type": {
+          "const": "deployed"
+        },
+        "from": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_stopped": {
+      "description": "The service's state became stopped.",
+      "type": "object",
+      "required": [
+        "at",
+        "type"
+      ],
+      "properties": {
+        "at": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "type": {
+          "const": "stopped"
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_down": {
+      "description": "State became absent and the version became empty; from is the version before.",
+      "type": "object",
+      "required": [
+        "at",
+        "type",
+        "from"
+      ],
+      "properties": {
+        "at": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "type": {
+          "const": "down"
+        },
+        "from": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_failed": {
+      "description": "A failure episode began, or its step name (the text of failed_step before the first ': ') changed. failed_step is the full text, truncated to 300 characters.",
+      "type": "object",
+      "required": [
+        "at",
+        "type",
+        "failed_step"
+      ],
+      "properties": {
+        "at": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "type": {
+          "const": "failed"
+        },
+        "failed_step": {
+          "type": "string",
+          "maxLength": 300
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_blocked": {
+      "description": "A block episode began, or its gate_code changed. Branch on gate_code, never gate (A-GATE-1).",
+      "type": "object",
+      "required": [
+        "at",
+        "type",
+        "gate_code",
+        "gate"
+      ],
+      "properties": {
+        "at": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "type": {
+          "const": "blocked"
+        },
+        "gate_code": {
+          "$ref": "common.schema.json#/$defs/common/properties/gate_code"
+        },
+        "gate": {
+          "type": "string",
+          "maxLength": 300
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_awaiting_image": {
+      "description": "The result became awaiting-image.",
+      "type": "object",
+      "required": [
+        "at",
+        "type"
+      ],
+      "properties": {
+        "at": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "type": {
+          "const": "awaiting-image"
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_recovered": {
+      "description": "The result left failed or blocked for deployed or skipped; attempts is the producer's failed_attempts as of the previous tick.",
+      "type": "object",
+      "required": [
+        "at",
+        "type",
+        "from",
+        "from_gate_code",
+        "attempts"
+      ],
+      "properties": {
+        "at": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "type": {
+          "const": "recovered"
+        },
+        "from": {
+          "enum": [
+            "failed",
+            "blocked"
+          ]
+        },
+        "from_gate_code": {
+          "$ref": "common.schema.json#/$defs/common/properties/gate_code"
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_removed": {
+      "description": "A name with an open lifetime left the inventory.",
+      "type": "object",
+      "required": [
+        "at",
+        "type"
+      ],
+      "properties": {
+        "at": {
+          "$ref": "common.schema.json#/$defs/timestamp"
+        },
+        "type": {
+          "const": "removed"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
