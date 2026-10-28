@@ -1,0 +1,26 @@
+{
+  "lifetimes": [
+    {
+      "id": "6f1c2b9e-3a4d-5e8f-9b0a-1c2d3e4f5a6b",
+      "name": "blog-lychee-land",
+      "kind": "container",
+      "added_at": "2026-10-28T09:14:02Z",
+      "removed_at": null,
+      "last": {
+        "result": "deployed",
+        "version": "1.2.0",
+        "gate_code": "ok",
+        "failed_step": "",
+        "state": "running",
+        "failed_attempts": 0
+      },
+      "events": [
+        {
+          "at": "2026-10-28T09:14:02Z",
+          "type": "deployed",
+          "from": null
+        }
+      ]
+    }
+  ]
+}

@@ -293,3 +293,33 @@ sudoers; it never starts anything else on this path.
   does not list, is `404`; a caller not granted the action is `403`; a unit with
   an action already running is `409`; a failure starting the action service is
   `502` with its error text.
+
+## A-HIST-1 Reconciler history
+
+What `schemas/events.schema.json` cannot hold. The feed is published next to
+the inventory; lychee-admin reads it.
+
+- **Path.** `/var/lib/lychee-inventory/events.json`, `0644 root:root`, written
+  only by lychee-ops' inventory role. It is replaced atomically by rename, so
+  readers never see a partial file, and it is rewritten only on ticks that
+  change it. Its mtime is the time of the last change.
+- **Lifetimes.** One per continuous appearance of a name. At most one is open
+  (`removed_at: null`) per name. A re-added name gets a new `id`. Closed
+  lifetimes are kept forever, and each keeps its last 50 events.
+- **Order.** Events are never edited, only dropped from the old end. They are
+  ordered oldest first within a lifetime. Events sharing an `at` came from one
+  tick, in this order: `added`, `deployed` / `stopped` / `down`, `recovered`,
+  `failed` / `blocked` / `awaiting-image`, `removed`.
+- **Episodes.** One `failed` / `blocked` per episode, and a new one only when
+  `failed_step` / `gate_code` changes. The count arrives as
+  `recovered.attempts`.
+- **Empty history.** An empty `events` array means "known since `added_at`,
+  nothing happened". A seeded lifetime's `added_at` is when history began, not
+  when the service first ran.
+- **`last`.** Not part of the reader contract. It is writer bookkeeping.
+- **Readers.** Ignore unknown event `type`s and unknown fields (the vocabulary
+  grows in minor releases), treat a missing or invalid file as "no history",
+  never as an error, and branch on `gate_code`, never `gate`. A reader facing
+  two open lifetimes for one name takes the one with the later `added_at`.
+  The schema describes producer output, so an unknown `type` fails it.
+- **Truncation.** `gate` and `failed_step` are truncated to 300 characters.

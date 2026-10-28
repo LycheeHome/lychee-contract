@@ -45,7 +45,7 @@ EXAMPLES = ROOT / "examples" / "declarations"
 SITE_SUFFIX = "-lychee-land"
 SCHEMAS = ROOT / "schemas"
 # shape directory under examples/ -> its schema
-SHAPES = ("inventory", "app-status", "resource-status", "clients", "op-result")
+SHAPES = ("inventory", "events", "app-status", "resource-status", "clients", "op-result")
 CONSTANT_KEYS = frozenset((
     "ci_job", "release_job", "release_image", "release_tag_format", "release_signer_workflow",
     "domain", "site_suffix", "site_name_pattern",

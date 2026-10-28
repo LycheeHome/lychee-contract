@@ -11,7 +11,7 @@ what each side must agree on, in a form each side can check mechanically.
 
 ## Files
 
-- `schemas/` JSON Schemas for the inventory, the app and resource status files, `schemas/clients.schema.json` (the shape of `/etc/lychee-admin/clients.json`) and `schemas/op-result.schema.json` (a host action's recorded result).
+- `schemas/` JSON Schemas for the inventory, the app and resource status files, `schemas/clients.schema.json` (the shape of `/etc/lychee-admin/clients.json`) and `schemas/op-result.schema.json` (a host action's recorded result) and `schemas/events.schema.json` (the reconciler's run-history feed).
 - `declarations/` the declaration validator (`validate_declarations.py`), its vocabulary and tests. What a declaration may carry is [A-DECL-1](AGREEMENTS.md).
 - `examples/` known-good and known-bad documents, checked by `tools/check_examples.py`.
 - `constants.json` values every repo must share (domain, CI and release job names, release image, ...).

@@ -1,0 +1,18 @@
+{
+  "deployed-without-to.json": {
+    "pointer": "/lifetimes/0/events/0",
+    "keyword": "oneOf"
+  },
+  "fifty-one-events.json": {
+    "pointer": "/lifetimes/0/events",
+    "keyword": "maxItems"
+  },
+  "long-gate.json": {
+    "pointer": "/lifetimes/0/events/0",
+    "keyword": "oneOf"
+  },
+  "unknown-type.json": {
+    "pointer": "/lifetimes/0/events/0",
+    "keyword": "oneOf"
+  }
+}
