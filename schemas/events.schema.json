@@ -190,7 +190,7 @@
       "additionalProperties": false
     },
     "event_failed": {
-      "description": "A failure episode began, or its failed_step changed. Truncated to 300 characters.",
+      "description": "A failure episode began, or its step name (the text of failed_step before the first ': ') changed. failed_step is the full text, truncated to 300 characters.",
       "type": "object",
       "required": [
         "at",

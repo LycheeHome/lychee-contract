@@ -310,9 +310,11 @@ the inventory; lychee-admin reads it.
   ordered oldest first within a lifetime. Events sharing an `at` came from one
   tick, in this order: `added`, `deployed` / `stopped` / `down`, `recovered`,
   `failed` / `blocked` / `awaiting-image`, `removed`.
-- **Episodes.** One `failed` / `blocked` per episode, and a new one only when
-  `failed_step` / `gate_code` changes. The count arrives as
-  `recovered.attempts`.
+- **Episodes.** One `failed` / `blocked` per episode, and a new one only
+  when the step name, the text of `failed_step` before the first `: `, changes
+  (all of `failed_step` when it has no `: `) / when `gate_code` changes. A
+  `failed_step` whose detail after the name differs is the same episode. The
+  count arrives as `recovered.attempts`.
 - **Empty history.** An empty `events` array means "known since `added_at`,
   nothing happened". A seeded lifetime's `added_at` is when history began, not
   when the service first ran.
